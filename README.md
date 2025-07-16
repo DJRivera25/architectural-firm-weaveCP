@@ -328,3 +328,191 @@ Build failed with: `It's currently unsupported to use "export *" in a client bou
 Added `'use client'` to the top of every component that uses `framer-motion` (e.g., `AboutPreview`, `ProcessPreview`, `PortfolioPreview`, `ContactCTA`, `HeroSection`). This ensures these components are treated as client components, resolving the error and allowing use of client-only libraries.
 
 ---
+
+## Authentication & Session User ID
+
+### Why is `session.user.id` important?
+
+- Many authenticated API routes (such as notifications) require the user ID to fetch or modify data specific to the logged-in user.
+- By default, NextAuth's session object may not include the user ID, only name, email, and role.
+
+### How is it implemented?
+
+- The NextAuth `callbacks` in `src/lib/auth.ts` are configured to add the user ID to both the JWT and the session:
+
+```ts
+callbacks: {
+  async jwt({ token, user }) {
+    if (user) {
+      token.role = user.role;
+      token.id = user.id; // Add user id to token
+    }
+    return token;
+  },
+  async session({ session, token }) {
+    if (token) {
+      session.user.role = token.role;
+      session.user.id = token.id as string; // Add user id to session
+    }
+    return session;
+  },
+},
+```
+
+### Why is this needed?
+
+- API routes (e.g., `/api/notifications`) check `session.user.id` to ensure the request is authenticated and to fetch the correct user's data.
+- If `session.user.id` is missing, the API will return `Unauthorized` even if the user is logged in.
+
+### Troubleshooting
+
+- If you get `Unauthorized` from an authenticated API route:
+  1. Make sure the session object includes `id` (check `/api/auth/session` response).
+  2. Ensure the above callback logic is present in your NextAuth config.
+  3. Log out and log in again after making changes to refresh the session.
+  4. Use a relative API base URL (e.g., `/api`) to ensure cookies are sent correctly.
+
+---
+
+## 🚀 Recent Advancements & Key Challenges
+
+### Major Advancements
+
+- **Full Authentication System:**
+  - Email/password registration with email confirmation (secure, production-ready flow)
+  - Google OAuth login/registration (NextAuth GoogleProvider)
+  - Only confirmed users can log in with credentials
+- **Beautiful Email Confirmation:**
+  - Custom HTML email styled to match the architectural firm’s brand
+  - Clear call-to-action and professional design
+- **Robust Error Handling:**
+  - All API routes and forms provide user-friendly error messages
+  - TypeScript strictness enforced throughout the codebase
+- **.gitignore and Environment Security:**
+  - Sensitive files and build output are excluded from git
+  - Environment variables are documented and used securely
+
+### Key Challenges & Solutions (Summary)
+
+- **TypeScript/Next.js Integration:**
+  - Solved global object typing for Mongoose connection cache
+  - Augmented NextAuth types for custom user roles
+- **React/Next.js Build Issues:**
+  - Fixed client/server component boundaries for framer-motion
+  - Ensured all UI components use correct export/import patterns
+- **Email Delivery:**
+  - Integrated Gmail SMTP with App Passwords for secure email delivery
+  - Designed and tested a branded HTML confirmation email
+- **OAuth & Credentials Flow:**
+  - Seamlessly combined Google OAuth and email/password flows in NextAuth
+  - Ensured only confirmed users can log in with credentials
+
+---
+
+For more details, see the full Challenges & Solutions section above.
+
+## Notification System
+
+### Overview
+
+This project includes a robust notification system with both persistent (database-backed) and toast (ephemeral) notifications. Users receive real-time feedback for actions and can view/manage important updates in a notification center.
+
+---
+
+### Features
+
+- **Toast notifications** for instant feedback (success, error, info, etc.)
+- **Persistent notifications** stored in MongoDB, associated with users
+- **NotificationBell** UI with unread count, dropdown, mark as read, and delete
+- **API routes** for CRUD operations on notifications
+- **TypeScript types and utilities** for frontend integration
+
+---
+
+### Toast Notifications
+
+- Powered by [`react-hot-toast`](https://react-hot-toast.com/)
+- Globally available (see `src/app/layout.tsx`)
+- **Usage:**
+  ```tsx
+  import toast from "react-hot-toast";
+  toast.success("Profile updated!");
+  toast.error("Something went wrong.");
+  toast("Neutral message.");
+  ```
+
+---
+
+### Persistent Notifications
+
+#### Backend
+
+- **Model:** `src/models/Notification.ts`
+- **API Routes:**
+  - `GET /api/notifications` — Fetch all notifications for the authenticated user
+  - `POST /api/notifications` — Create a new notification (admin/system use)
+  - `PATCH /api/notifications/[id]` — Mark as read
+  - `DELETE /api/notifications/[id]` — Delete notification
+- **TypeScript Types:** `src/types/notification.ts`
+
+#### Frontend
+
+- **Utilities:** `src/utils/notification.ts`
+  - `fetchNotifications()`
+  - `markNotificationRead(id)`
+  - `deleteNotification(id)`
+  - `createNotification(payload)`
+- **NotificationBell Component:** `src/components/NotificationBell.tsx`
+  - Shows unread count
+  - Dropdown with notifications (mark as read, delete, link support)
+  - Uses toast for feedback
+- **Navbar Integration:**
+  - Bell icon appears when logged in
+
+#### Example: Creating a Notification (Backend)
+
+```ts
+import Notification from "@/models/Notification";
+await Notification.create({
+  user: userId,
+  message: "Your application was approved!",
+  type: "success",
+  link: "/dashboard/applications",
+});
+```
+
+#### Example: Creating a Notification (Frontend, Admin)
+
+```ts
+import { createNotification } from "@/utils/notification";
+await createNotification({
+  user: userId,
+  message: "A new job has been posted.",
+  type: "info",
+  link: "/jobs",
+});
+```
+
+---
+
+### Real-Time & Integration
+
+- The system is ready for polling or WebSocket integration for real-time updates.
+- Integrate notification creation into key app events (e.g., job posted, application status changed) for a full experience.
+
+---
+
+### Customization
+
+- Notification types: `info`, `success`, `warning`, `error`
+- Extend the Notification model or UI as needed for your use case.
+
+---
+
+### Security
+
+- All notification API routes require authentication and only allow access to the user's own notifications.
+
+---
+
+For further customization or real-time features, see the code comments and ask for guidance as needed.

@@ -45,6 +45,24 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      async profile(profile) {
+        // Only allow sign-in if the user is already registered and confirmed
+        await connectDB();
+        const user = await User.findOne({ email: profile.email });
+        if (!user) {
+          throw new Error("This email is not registered. Please register first.");
+        }
+        if (!user.isEmailConfirmed) {
+          throw new Error("Please confirm your email before logging in.");
+        }
+        return {
+          id: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          image: user.image,
+        };
+      },
     }),
   ],
   session: {
@@ -54,12 +72,14 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, profile }) {
       if (user) {
         token.role = user.role;
+        token.id = user.id; // Add user id to token
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
         session.user.role = token.role;
+        session.user.id = token.id as string; // Add user id to session
       }
       return session;
     },

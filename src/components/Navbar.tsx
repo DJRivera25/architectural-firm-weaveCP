@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import { ExtendedSession } from "@/types";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Navbar() {
   const { data: session } = useSession() as { data: ExtendedSession | null };
@@ -44,6 +45,7 @@ export default function Navbar() {
 
             {session ? (
               <div className="flex items-center space-x-4">
+                <NotificationBell />
                 {session.user?.role === "admin" && (
                   <Link
                     href="/admin"
@@ -115,6 +117,7 @@ export default function Navbar() {
 
             {session ? (
               <div className="pt-4 pb-3 border-t border-gray-200">
+                <NotificationBell />
                 {session.user?.role === "admin" && (
                   <Link
                     href="/admin"

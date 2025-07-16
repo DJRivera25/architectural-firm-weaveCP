@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
+import api from "@/utils/axios";
+import { AxiosError } from "axios";
 
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -26,16 +28,12 @@ export default function RegisterPage() {
   const onSubmit = async (data: FormData) => {
     setServerError("");
     setSuccess(false);
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    const result = await res.json();
-    if (!res.ok) {
-      setServerError(result.message || "Registration failed");
-    } else {
+    try {
+      const res = await api.post("/auth/register", data);
       setSuccess(true);
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      setServerError(error.response?.data?.message || "Registration failed");
     }
   };
 

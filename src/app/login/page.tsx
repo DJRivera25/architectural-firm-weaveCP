@@ -24,7 +24,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setServerError("");
-    const res = await signIn("credentials", {
+    const res = await signIn("credenti  als", {
       ...data,
       redirect: false,
     });
