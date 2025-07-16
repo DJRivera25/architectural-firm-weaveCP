@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import LoginClient from "./LoginClient";
 
-export default function LoginPage() {
+function LoginPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const confirmed = searchParams.get("confirmed");
@@ -32,4 +32,12 @@ export default function LoginPage() {
   }
 
   return <LoginClient />;
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
 }
