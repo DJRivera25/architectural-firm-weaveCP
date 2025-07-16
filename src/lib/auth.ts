@@ -50,10 +50,12 @@ export const authOptions: NextAuthOptions = {
         await connectDB();
         const user = await User.findOne({ email: profile.email });
         if (!user) {
-          throw new Error("This email is not registered. Please register first.");
+          // Throw a standard NextAuth error code for unregistered emails
+          throw new Error("OAuthAccountNotLinked");
         }
         if (!user.isEmailConfirmed) {
-          throw new Error("Please confirm your email before logging in.");
+          // Throw a standard NextAuth error code for unconfirmed emails
+          throw new Error("AccessDenied");
         }
         return {
           id: user._id.toString(),

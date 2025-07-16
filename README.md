@@ -115,9 +115,9 @@ src/
 
 4. **Run the development server**
 
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run dev
+```
 
 5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
@@ -516,3 +516,40 @@ await createNotification({
 ---
 
 For further customization or real-time features, see the code comments and ask for guidance as needed.
+
+---
+
+## Authentication Feedback & Notifications
+
+### Login and OAuth Feedback
+
+- **Toast notifications** are used to provide instant feedback for login success and failure, both for credentials and Google OAuth logins.
+- **Google OAuth Success:**
+  - The Google sign-in button appends `justLoggedIn=1` to the callback URL.
+  - The dashboard page checks for this param and shows a success toast if present.
+  - This is a common, pragmatic solution in Next.js/NextAuth apps, as OAuth always redirects and does not allow direct client-side feedback.
+- **Login Error Handling:**
+  - The login page maps NextAuth error codes (e.g., `OAuthAccountNotLinked`, `AccessDenied`) to user-friendly toast messages.
+  - A fallback error toast is only shown if the user is unauthenticated and a `callbackUrl` param is present, ensuring errors are only shown after real login attempts.
+
+### Session API Security
+
+- The `/api/auth/session` route returns a `401 Unauthorized` status if there is no valid session, instead of always returning `200 OK`.
+- This is best practice for security and allows the frontend to reliably detect authentication state.
+
+### Why These Patterns Are Used
+
+- **OAuth flows** in NextAuth do not provide a built-in way to show a toast on the landing page after a successful login, so query params are used as a bridge.
+- **Error propagation** from OAuth is limited in NextAuth, so mapping error codes and using fallback logic ensures users always get clear feedback.
+- **Returning 401 for unauthenticated session** is secure and prevents leaking information.
+
+### Summary Table
+
+| Feature/Pattern                               | Band-aid? | Best Practice? | Notes                                                      |
+| --------------------------------------------- | --------- | -------------- | ---------------------------------------------------------- |
+| 401 for unauthenticated session               |           | ✅             | Secure, correct                                            |
+| Toasts for login success/failure              |           | ✅             | Modern UX                                                  |
+| Query param for post-OAuth success toast      | ⚠️        | ✅ (pragmatic) | Common workaround, not a hack, widely used in Next.js apps |
+| Fallback error toast only after login attempt |           | ✅             | Good UX, avoids spamming                                   |
+
+---

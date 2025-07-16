@@ -6,6 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import toast from "react-hot-toast";
+import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -16,6 +20,32 @@ type FormData = z.infer<typeof schema>;
 
 export default function LoginPage() {
   const [serverError, setServerError] = useState("");
+  const searchParams = useSearchParams();
+  const error = searchParams.get("error");
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (error) {
+      let message = "Login failed.";
+      if (error === "OAuthAccountNotLinked") {
+        message = "This email is not registered. Please register first.";
+      } else if (error === "Callback") {
+        message = "There was a problem with the login callback.";
+      } else if (error === "AccessDenied") {
+        message = "Access denied. Please contact support.";
+      } else if (error === "CustomErrorMessage") {
+        message = "This email is not registered or not confirmed.";
+      }
+      toast.error(message);
+    } else if (status === "unauthenticated") {
+      // Only show fallback error if redirected from an OAuth attempt (callbackUrl param present)
+      const callbackUrl = searchParams.get("callbackUrl");
+      if (callbackUrl) {
+        toast.error("Login failed. Please use a registered and confirmed email.");
+      }
+    }
+  }, [error, status, searchParams]);
+
   const {
     register,
     handleSubmit,
@@ -24,19 +54,21 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
     setServerError("");
-    const res = await signIn("credenti  als", {
+    const res = await signIn("credentials", {
       ...data,
       redirect: false,
     });
     if (res?.error) {
       setServerError(res.error);
+      toast.error(res.error || "Login failed");
     } else {
+      toast.success("Login successful!");
       window.location.href = "/dashboard";
     }
   };
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
+    signIn("google", { callbackUrl: "/dashboard?justLoggedIn=1" });
   };
 
   return (
