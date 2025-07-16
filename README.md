@@ -28,6 +28,8 @@ A modern, full-stack web application for an architectural firm built with Next.j
 
 ## 🛠 Tech Stack
 
+<!-- comment -->
+
 ### Frontend
 
 - **Next.js 14**: React framework with App Router
