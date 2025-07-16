@@ -29,7 +29,6 @@ Thumbs.db
 
 # Misc
 coverage/
-
 # Optional: lock files (uncomment if you want to ignore lock files)
 # package-lock.json
 # yarn.lock

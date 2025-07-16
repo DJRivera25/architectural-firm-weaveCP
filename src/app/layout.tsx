@@ -5,8 +5,11 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Toaster } from "react-hot-toast";
+import { Archivo, Archivo_Narrow, Work_Sans } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+const archivo = Archivo({ subsets: ["latin"], variable: "--font-archivo" });
+const archivoNarrow = Archivo_Narrow({ subsets: ["latin"], variable: "--font-archivo-narrow" });
+const workSans = Work_Sans({ subsets: ["latin"], variable: "--font-work-sans" });
 
 export const metadata: Metadata = {
   title: "Architectural Firm - Innovative Design Solutions",
@@ -25,8 +28,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={`${archivo.variable} ${archivoNarrow.variable} ${workSans.variable}`}>
+      <body>
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
             <Navbar />

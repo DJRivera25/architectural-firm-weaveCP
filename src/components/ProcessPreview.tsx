@@ -6,9 +6,9 @@ import { motion } from "framer-motion";
 const processSteps = [
   {
     number: "01",
-    title: "Discovery & Consultation",
+    title: "Scope & Contract",
     description:
-      "We begin by understanding your vision, requirements, and project goals through detailed consultation.",
+      "We begin by understanding your needs, scoping out the project, creating a drawing list, and formalizing our commitment in a contract that outlines our deliverables, requirements, and timeline.",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -22,9 +22,9 @@ const processSteps = [
   },
   {
     number: "02",
-    title: "Concept Development",
+    title: "Kickoff",
     description:
-      "Our team creates initial concepts and design approaches that align with your vision and requirements.",
+      "We delve into the project details, discussing standards, reference drawings, update preferences, and communication frequency to ensure smooth collaboration as your remote in-house resource.",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -38,8 +38,9 @@ const processSteps = [
   },
   {
     number: "03",
-    title: "Design & Planning",
-    description: "We develop detailed architectural plans, 3D models, and technical specifications for your project.",
+    title: "Drawing, Updates & Revisions",
+    description:
+      "We produce the required drawings and deliver them on schedule. We quickly incorporate updates and revisions, gradually becoming more familiar with your design language for a seamless workflow.",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -53,11 +54,25 @@ const processSteps = [
   },
   {
     number: "04",
-    title: "Construction & Delivery",
-    description: "We oversee the construction process and ensure the final result exceeds your expectations.",
+    title: "Final Revisions & Meeting",
+    description:
+      "We make final edits to ensure the output meets your needs and satisfies your clients. The final meeting confirms everything is completed to your satisfaction.",
     icon: (
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    ),
+  },
+  {
+    number: "05",
+    title: "Job Review & Feedback",
+    description:
+      "We seek your feedback to improve our processes. Your guidance helps us enhance our services, ensuring we continuously improve for you and all our clients.",
+    icon: (
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 15s1.5 2 4 2 4-2 4-2" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9h.01M15 9h.01" />
       </svg>
     ),
   },
@@ -65,9 +80,9 @@ const processSteps = [
 
 export default function ProcessPreview() {
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
+    <section className="py-16 sm:py-20 bg-gray-50 px-2 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-10 sm:mb-16">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -89,25 +104,58 @@ export default function ProcessPreview() {
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        {/* Timeline Container */}
+        <div
+          className="relative flex flex-col lg:flex-row items-stretch justify-between gap-y-8 gap-x-12 mb-16 lg:mb-24"
+          role="list"
+          aria-label="Process Steps"
+        >
           {processSteps.map((step, index) => (
-            <motion.div
+            <div
               key={step.number}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
+              className="relative flex-1 flex flex-col items-center group px-2 sm:px-4"
+              role="listitem"
+              tabIndex={0}
+              aria-label={`Step ${step.number}: ${step.title}`}
             >
-              <div className="flex items-center mb-4">
-                <div className="bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold mr-4">
+              {/* Connecting Line/Arrow */}
+              {index < processSteps.length - 1 && (
+                <>
+                  {/* Horizontal line for desktop */}
+                  <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 z-0 pointer-events-none">
+                    <svg
+                      width="100%"
+                      height="24"
+                      viewBox="0 0 120 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="absolute left-0 top-0"
+                    >
+                      <line x1="0" y1="12" x2="112" y2="12" stroke="#2563eb" strokeWidth="2" strokeDasharray="8 8">
+                        <animate attributeName="stroke-dashoffset" values="16;0" dur="1.2s" repeatCount="indefinite" />
+                      </line>
+                      <polygon points="112,6 120,12 112,18" fill="#2563eb" />
+                    </svg>
+                  </div>
+                  {/* Hide vertical connector on mobile to prevent overlap */}
+                </>
+              )}
+              {/* Step Circle/Icon */}
+              <div className="relative z-10 flex flex-col items-center group focus:outline-none">
+                <div
+                  className="transition-all duration-300 bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl font-extrabold shadow-lg border-4 border-white group-hover:scale-110 group-focus:scale-110 group-hover:shadow-2xl group-focus:shadow-2xl"
+                  aria-hidden="true"
+                >
                   {step.number}
                 </div>
-                <div className="text-blue-600">{step.icon}</div>
+                <div className="text-blue-600 mt-2 animate-fadeInSlow">{step.icon}</div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">{step.title}</h3>
-              <p className="text-gray-600">{step.description}</p>
-            </motion.div>
+              {/* Step Content */}
+              <div className="mt-4 text-center lg:text-left px-2 max-w-xs">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{step.title}</h3>
+                <p className="text-gray-600 text-base sm:text-lg leading-relaxed">{step.description}</p>
+              </div>
+            </div>
           ))}
         </div>
 

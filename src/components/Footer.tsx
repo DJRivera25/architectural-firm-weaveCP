@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -7,7 +8,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-2xl font-bold mb-4">Architectural Firm</h3>
+            <div className="mb-4 flex">
+              <Image
+                src="/weave-hworkmark-white.svg"
+                alt="Weave Logo"
+                width={320}
+                height={90}
+                className="w-64 md:w-80 h-auto mx-0"
+                priority
+              />
+            </div>
             <p className="text-gray-300 mb-4">
               Creating innovative design solutions that inspire and transform spaces. We specialize in sustainable
               architecture and exceptional client experiences.
@@ -82,7 +92,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-300">
-          <p>&copy; 2024 Architectural Firm. All rights reserved.</p>
+          <p>&copy; Weave Collaboration Partners. All rights reserved.</p>
         </div>
       </div>
     </footer>

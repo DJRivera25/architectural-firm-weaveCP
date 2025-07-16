@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -19,62 +19,142 @@ type FormData = z.infer<typeof schema>;
 export default function RegisterPage() {
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [email, setEmail] = useState("");
+  const [timer, setTimer] = useState(300); // 5 minutes in seconds
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    getValues,
   } = useForm<FormData>({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    if (success && timer > 0) {
+      timerRef.current = setTimeout(() => setTimer((t) => t - 1), 1000);
+    }
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [success, timer]);
 
   const onSubmit = async (data: FormData) => {
     setServerError("");
     setSuccess(false);
+    setResendMessage("");
+    setEmail(data.email);
     try {
       const res = await api.post("/auth/register", data);
       setSuccess(true);
+      setTimer(300); // Reset timer on registration
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       setServerError(error.response?.data?.message || "Registration failed");
     }
   };
 
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendMessage("");
+    try {
+      await api.post("/auth/confirm", { email });
+      setResendMessage("Confirmation email resent. Please check your inbox.");
+      setTimer(300); // Restart timer
+    } catch (err) {
+      const error = err as AxiosError<{ message?: string }>;
+      setResendMessage(error.response?.data?.message || "Failed to resend email.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white p-8 rounded shadow">
-        <h2 className="text-2xl font-bold mb-6 text-center">Create an Account</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 sm:p-10 relative">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-14 h-14 mb-2 flex items-center justify-center rounded-full bg-blue-100">
+            {/* Replace with your logo if available */}
+            <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create an Account</h2>
+          <p className="text-gray-500 mt-1 text-center text-base">Register to access your dashboard and projects.</p>
+        </div>
         {success ? (
-          <div className="text-green-600 mb-4 text-center">
+          <div className="text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-5 text-center mb-4">
             Registration successful! Please check your email to confirm your account.
+            <br />
+            <div className="mt-4 flex flex-col items-center">
+              <button
+                className="bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold disabled:opacity-50 mt-2 shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                onClick={handleResend}
+                disabled={timer > 0 || resendLoading}
+              >
+                {resendLoading ? "Resending..." : "Resend Confirmation Email"}
+              </button>
+              <div className="text-sm text-gray-600 mt-2">
+                {timer > 0 ? `You can resend in ${formatTime(timer)}` : "You can now resend the confirmation email."}
+              </div>
+              {resendMessage && <div className="text-blue-600 mt-2">{resendMessage}</div>}
+            </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div>
-              <label className="block mb-1 font-medium">Name</label>
-              <input type="text" {...register("name")} className="w-full border rounded px-3 py-2" />
+              <label className="block mb-1 font-medium text-gray-700">Name</label>
+              <input
+                type="text"
+                {...register("name")}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                autoComplete="name"
+              />
               {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
             </div>
             <div>
-              <label className="block mb-1 font-medium">Email</label>
-              <input type="email" {...register("email")} className="w-full border rounded px-3 py-2" />
+              <label className="block mb-1 font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                {...register("email")}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                autoComplete="email"
+              />
               {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
             </div>
             <div>
-              <label className="block mb-1 font-medium">Password</label>
-              <input type="password" {...register("password")} className="w-full border rounded px-3 py-2" />
+              <label className="block mb-1 font-medium text-gray-700">Password</label>
+              <input
+                type="password"
+                {...register("password")}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                autoComplete="new-password"
+              />
               {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
             </div>
             {serverError && <p className="text-red-600 text-sm text-center">{serverError}</p>}
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition-colors"
+              className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Registering..." : "Register"}
             </button>
           </form>
         )}
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-6 text-center text-sm text-gray-600">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-blue-600 hover:underline font-medium">
             Login
           </Link>
         </div>
