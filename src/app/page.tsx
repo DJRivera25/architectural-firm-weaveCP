@@ -24,6 +24,7 @@ export default function Home() {
       <main className="min-h-screen" id="main-content" aria-label="Main content">
         <section aria-labelledby="hero-heading">
           <HeroSection />
+          <AboutPreview />
         </section>
         <WhyWeaveSection />
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>
