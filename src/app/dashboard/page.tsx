@@ -1,15 +1,15 @@
 "use client";
-import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
+
+import { Suspense } from "react";
+import DashboardClient from "./DashboardClient";
 
 export default function DashboardPage() {
-  const searchParams = useSearchParams();
-  const justLoggedIn = searchParams.get("justLoggedIn");
-
-  useEffect(() => {
-    if (justLoggedIn) {
-      toast.success("Login successful!");
-    }
-  }, [justLoggedIn]);
+  return (
+    <>
+      <Suspense fallback={null}>
+        <DashboardClient />
+      </Suspense>
+      {/* ...rest of your dashboard UI... */}
+    </>
+  );
 }
