@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   keywords: "architecture, design, sustainable, innovative, construction, planning",
   authors: [{ name: "Weave Collaboration Partners" }],
   icons: {
-    icon: "/weave-symbol-tri.png", // path from public folder
+    icon: "/favicon.png", // path from public folder
   },
   openGraph: {
     title: "Weave Colloboration Partners",
@@ -19,6 +19,14 @@ export const metadata: Metadata = {
       "Leading architectural firm specializing in innovative design solutions, sustainable architecture, and exceptional client experiences.",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: `${process.env.NEXTAUTH_URL}/weave-symbol-tri.png`, // Replace with your actual domain in production
+        width: 1200,
+        height: 630,
+        alt: "Weave Collaboration Partners Logo",
+      },
+    ],
   },
 };
 
