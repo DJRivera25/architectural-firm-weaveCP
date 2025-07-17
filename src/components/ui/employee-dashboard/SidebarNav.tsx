@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ListTodo, CalendarDays, CreditCard, Plane, User, Settings } from "lucide-react";
+import { Home, ListTodo, CalendarDays, CreditCard, Plane, User, Users, Settings } from "lucide-react";
 
 const navItems = [
   { href: "/employee-dashboard", label: "Home", icon: Home },
   { href: "/employee-dashboard/tasks", label: "My Tasks", icon: ListTodo },
+  { href: "/employee-dashboard/team", label: "Team", icon: Users },
   { href: "/employee-dashboard/attendance", label: "Attendance", icon: CalendarDays },
   { href: "/employee-dashboard/payroll", label: "Payroll", icon: CreditCard },
   { href: "/employee-dashboard/leave", label: "Leave", icon: Plane },

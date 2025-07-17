@@ -2,6 +2,7 @@ import api from "./axios";
 import { ContentData, JobData, TimeLogData, Task, Project, Leave, LeaveWithUser, Event, LeaveCredit } from "@/types";
 import { Notification, NotificationPayload } from "@/types/notification";
 import { IUser } from "@/models/User";
+import { ITeam } from "@/models/Team";
 
 // Cloudinary resource type (strict)
 export interface CloudinaryImageResource {
@@ -26,6 +27,17 @@ export const deleteContent = (id: string) => api.delete(`/content/${id}`);
 // --- Team ---
 export const getTeam = () => api.get<IUser[]>("/team");
 export const updateTeamMember = (id: string, data: Partial<IUser>) => api.patch<IUser>(`/team/${id}`, data);
+
+// --- Teams (new model) ---
+export const getTeams = () => api.get<ITeam[]>("/team");
+export const getTeamById = (id: string) => api.get<ITeam>(`/team/${id}`);
+export const createTeam = (data: { name: string; description?: string; members: string[]; manager?: string }) =>
+  api.post<ITeam>("/team", data);
+export const updateTeam = (
+  id: string,
+  data: { name?: string; description?: string; members?: string[]; manager?: string }
+) => api.patch<ITeam>(`/team/${id}`, data);
+export const deleteTeam = (id: string) => api.delete<{ success: boolean }>(`/team/${id}`);
 
 // --- Users (admin & profile) ---
 export const getUsers = (team?: string) => api.get<IUser[]>(`/users${team ? `?team=${team}` : ""}`);

@@ -1,15 +1,37 @@
 import { Suspense } from "react";
 import Head from "next/head";
-import HeroSection from "@/components/ui/HeroSection";
-import AboutPreview from "@/components/ui/AboutPreview";
-import ProcessPreview from "@/components/ui/ProcessPreview";
-import PortfolioPreview from "@/components/ui/PortfolioPreview";
-import ContactCTA from "@/components/ui/ContactCTA";
+import HeroSection, { HeroSectionProps } from "@/components/ui/HeroSection";
+import AboutPreview, { AboutPreviewProps } from "@/components/ui/AboutPreview";
+import ProcessPreview, { ProcessPreviewProps } from "@/components/ui/ProcessPreview";
+import PortfolioPreview, { PortfolioPreviewProps } from "@/components/ui/PortfolioPreview";
+import ContactCTA, { ContactCTAProps } from "@/components/ui/ContactCTA";
 import ScrollToContactOnLoad from "@/components/ui/ScrollToContactOnLoad";
-import { WhyWeaveSection } from "@/components/ui/AboutPreview";
-import OurTeam from "@/components/ui/OurTeam";
+import WhyWeave, { WhyWeaveProps } from "@/components/ui/WhyWeave";
+import OurTeam, { OurTeamProps } from "@/components/ui/OurTeam";
 
-export default function Home() {
+async function fetchSection(section: string) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/content?section=${section}`, {
+      cache: "no-store",
+    });
+    const data = await res.json();
+    return Array.isArray(data) ? data[0]?.publishedData || {} : data?.publishedData || {};
+  } catch {
+    return {};
+  }
+}
+
+export default async function Home() {
+  const [hero, about, whyWeave, process, portfolio, team, contact, footer] = await Promise.all([
+    fetchSection("hero"),
+    fetchSection("about"),
+    fetchSection("why-weave"),
+    fetchSection("process"),
+    fetchSection("portfolio"),
+    fetchSection("team"),
+    fetchSection("contact"),
+    fetchSection("footer"),
+  ]);
   return (
     <>
       <ScrollToContactOnLoad />
@@ -23,27 +45,27 @@ export default function Home() {
       </Head>
       <main className="min-h-screen" id="main-content" aria-label="Main content">
         <section aria-labelledby="hero-heading">
-          <HeroSection />
-          <AboutPreview />
+          <HeroSection {...(hero as HeroSectionProps)} />
+          <AboutPreview {...(about as AboutPreviewProps)} />
+          <WhyWeave {...(whyWeave as WhyWeaveProps)} />
         </section>
-        <WhyWeaveSection />
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>
           <section aria-labelledby="process-heading">
-            <ProcessPreview />
+            <ProcessPreview {...(process as ProcessPreviewProps)} />
           </section>
         </Suspense>
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>
           <section aria-labelledby="team-heading">
-            <OurTeam />
+            <OurTeam {...(team as OurTeamProps)} />
           </section>
         </Suspense>
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>
           <section aria-labelledby="portfolio-heading">
-            <PortfolioPreview />
+            <PortfolioPreview {...(portfolio as PortfolioPreviewProps)} />
           </section>
         </Suspense>
         <section aria-labelledby="contact-heading">
-          <ContactCTA />
+          <ContactCTA {...(contact as ContactCTAProps)} />
         </section>
       </main>
     </>

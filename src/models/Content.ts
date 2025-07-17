@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 
 export interface IContent extends mongoose.Document {
   section: string;
-  title: string;
-  content: string;
-  images: string[];
+  draftData: Record<string, unknown>;
+  publishedData: Record<string, unknown>;
+  status: "draft" | "published";
   order: number;
   isActive: boolean;
   createdAt: Date;
@@ -16,22 +16,23 @@ const contentSchema = new mongoose.Schema<IContent>(
     section: {
       type: String,
       required: [true, "Section is required"],
-      enum: ["home", "about", "process", "why-choose-us", "team", "portfolio", "careers"],
+      enum: ["hero", "about", "why-weave", "process", "portfolio", "team", "contact", "footer"],
     },
-    title: {
+    draftData: {
+      type: Object,
+      required: true,
+      default: {},
+    },
+    publishedData: {
+      type: Object,
+      required: true,
+      default: {},
+    },
+    status: {
       type: String,
-      required: [true, "Title is required"],
-      trim: true,
+      enum: ["draft", "published"],
+      default: "draft",
     },
-    content: {
-      type: String,
-      required: [true, "Content is required"],
-    },
-    images: [
-      {
-        type: String,
-      },
-    ],
     order: {
       type: Number,
       default: 0,

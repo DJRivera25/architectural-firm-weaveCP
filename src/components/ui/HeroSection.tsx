@@ -5,16 +5,33 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
-export default function HeroSection() {
-  // Animation state for before/after scan
+export type HeroSectionProps = {
+  beforeImage?: string;
+  afterImage?: string;
+  subheadline?: string;
+  cta1Text?: string;
+  cta1Link?: string;
+  cta2Text?: string;
+  cta2Link?: string;
+};
+
+export default function HeroSection({
+  beforeImage = "/Before - Anilao Site Plan_page-0001.jpg",
+  afterImage = "/After - Anilao Render.jpg",
+  subheadline = "We are an architecture service outsourcing company that seamlessly translates design concepts into documentation.",
+  cta1Text = "View Our Work",
+  cta1Link = "/portfolio",
+  cta2Text = "Learn More",
+  cta2Link = "/about",
+}: HeroSectionProps) {
   const [reveal, setReveal] = useState(0);
-  const [direction, setDirection] = useState<1 | -1>(1); // 1: before->after, -1: after->before
+  const [direction, setDirection] = useState<1 | -1>(1);
   const requestRef = useRef<number | undefined>(undefined);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     let start: number | undefined;
-    const duration = 4000; // ms (was 2000)
+    const duration = 4000;
     function animate(timestamp: number) {
       if (!start) start = timestamp;
       const progress = Math.min((timestamp - start) / duration, 1);
@@ -22,7 +39,6 @@ export default function HeroSection() {
       if (progress < 1) {
         requestRef.current = requestAnimationFrame(animate);
       } else {
-        // Wait 3s, then reverse direction and animate again
         intervalRef.current = setTimeout(() => {
           setDirection((d) => (d === 1 ? -1 : 1));
         }, 3000);
@@ -41,11 +57,9 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[500px] sm:min-h-[600px] md:min-h-[700px] h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 overflow-hidden px-2 py-2">
-      {/* Before/After Animated Comparison */}
       <div className="relative w-full max-w-lg sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto aspect-[16/9] sm:aspect-[16/7] mb-6 sm:mb-8 rounded-xl overflow-hidden shadow-2xl border-4 border-white min-h-[220px]">
-        {/* Before image (site plan) */}
         <Image
-          src="/Before - Anilao Site Plan_page-0001.jpg"
+          src={beforeImage}
           alt="Before: Site Plan"
           fill
           className="absolute inset-0 w-full h-full object-cover object-center select-none"
@@ -53,9 +67,8 @@ export default function HeroSection() {
           priority
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1024px"
         />
-        {/* After image (render) with sharp scanner boundary */}
         <Image
-          src="/After - Anilao Render.jpg"
+          src={afterImage}
           alt="After: Rendered View"
           fill
           className="absolute inset-0 w-full h-full object-cover object-center select-none"
@@ -68,33 +81,18 @@ export default function HeroSection() {
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1024px"
         />
       </div>
-
-      {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
       </div>
-
       <div className="relative z-10 text-center text-white px-2 sm:px-4 lg:px-8 max-w-lg sm:max-w-2xl lg:max-w-4xl mx-auto">
-        {/* <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6"
-        >
-          Creating Spaces That
-          <span className="block text-blue-300">Inspire & Transform</span>
-        </motion.h1> */}
-
         <motion.p
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-base sm:text-xl md:text-2xl text-blue-100 mb-6 sm:mb-8 max-w-2xl mx-auto"
         >
-          We are an <span className="text-yellow-400 font-bold">architecture service outsourcing company</span> that
-          seamlessly translates design concepts into documentation.
+          {subheadline}
         </motion.p>
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -102,19 +100,18 @@ export default function HeroSection() {
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <Link
-            href="/portfolio"
+            href={cta1Link}
             className="bg-white text-blue-900 px-6 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-blue-50 transition-colors duration-300 w-full sm:w-auto"
           >
-            View Our Work
+            {cta1Text}
           </Link>
           <Link
-            href="/about"
+            href={cta2Link}
             className="border-2 border-white text-white px-6 py-3 sm:px-8 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-white hover:text-blue-900 transition-colors duration-300 w-full sm:w-auto"
           >
-            Learn More
+            {cta2Text}
           </Link>
         </motion.div>
-
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -128,8 +125,6 @@ export default function HeroSection() {
           </div>
         </motion.div>
       </div>
-
-      {/* Floating Elements */}
       <motion.div
         animate={{ y: [0, -20, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}

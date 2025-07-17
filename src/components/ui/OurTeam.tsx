@@ -3,19 +3,25 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 
-const management = [
+export type TeamMember = { name: string; role: string; image: string };
+
+export type OurTeamProps = {
+  management?: TeamMember[];
+  admin?: TeamMember[];
+  production?: TeamMember[];
+};
+
+const defaultManagement: TeamMember[] = [
   { name: "Nicky Santiago", role: "Partner", image: "/DENS0602.jpg" },
   { name: "Jon Lanuza", role: "Partner", image: "/DENS0133.jpg" },
 ];
-
-const admin = [
+const defaultAdmin: TeamMember[] = [
   { name: "Yza Buenaventura", role: "HR Manager", image: "/DENS0315.jpg" },
   { name: "Jonathan Fernandez", role: "IT Administrator", image: "/IMG_1985.JPG" },
   { name: "Wence Medina", role: "General & Administrative Associate", image: "/DENS0273.jpg" },
   { name: "Hannah Urrera", role: "Finance & Accounting Associate", image: "/IMG_1983.JPG" },
 ];
-
-const production = [
+const defaultProduction: TeamMember[] = [
   { name: "Van Climaco", role: "Associate Architect", image: "/image0.jpg" },
   { name: "Ar. John Lu", role: "BIM Manager/Consultant", image: "/DENS0227.jpg" },
   { name: "Joanne Martinez", role: "BIM Coordinator", image: "/DENS0146.jpg" },
@@ -27,12 +33,12 @@ const production = [
   { name: "Chel Sarmiento", role: "Architectural Modeler", image: "/DENS0209.jpg" },
 ];
 
-function TeamGrid({ members }: { members: { name: string; role: string; image: string }[] }) {
+function TeamGrid({ members }: { members: TeamMember[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-10 gap-x-6">
       {members.map((member, idx) => (
         <motion.div
-          key={member.name}
+          key={`${member.name || "unnamed"}-${idx}`}
           initial={{ opacity: 0, y: 40, scale: 0.96 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, delay: idx * 0.08, type: "spring", bounce: 0.18 }}
@@ -41,7 +47,7 @@ function TeamGrid({ members }: { members: { name: string; role: string; image: s
         >
           <div className="relative w-full aspect-[3/4] h-72 bg-gray-100 overflow-hidden rounded-t-2xl">
             <Image
-              src={member.image || "/placeholder-profile.png"}
+              src={member.image && member.image !== "" ? member.image : "/placeholder-profile.png"}
               alt={member.name}
               fill
               className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
@@ -59,18 +65,21 @@ function TeamGrid({ members }: { members: { name: string; role: string; image: s
   );
 }
 
-export default function OurTeam() {
+export default function OurTeam({
+  management = defaultManagement,
+  admin = defaultAdmin,
+  production = defaultProduction,
+}: OurTeamProps) {
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-4xl font-bold text-center mb-12 text-gray-900">Our Team</h2>
-        {/* Management at the top, centered */}
         <div className="mb-16">
           <h3 className="text-2xl font-semibold text-center mb-8 text-gray-800 tracking-wide uppercase">Management</h3>
           <div className="flex flex-col md:flex-row justify-center gap-8">
             {management.map((member, idx) => (
               <motion.div
-                key={member.name}
+                key={`${member.name || "unnamed"}-${idx}`}
                 initial={{ opacity: 0, y: 40, scale: 0.96 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.7, delay: idx * 0.12, type: "spring", bounce: 0.18 }}
@@ -79,7 +88,7 @@ export default function OurTeam() {
               >
                 <div className="relative w-full aspect-[3/4] h-80 bg-gray-100 overflow-hidden rounded-t-2xl">
                   <Image
-                    src={member.image || "/placeholder-profile.png"}
+                    src={member.image && member.image !== "" ? member.image : "/placeholder-profile.png"}
                     alt={member.name}
                     fill
                     className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
@@ -95,12 +104,10 @@ export default function OurTeam() {
             ))}
           </div>
         </div>
-        {/* Admin in the middle */}
         <div className="mb-16">
           <h3 className="text-2xl font-semibold text-center mb-8 text-gray-800 tracking-wide uppercase">Admin</h3>
           <TeamGrid members={admin} />
         </div>
-        {/* Production Team at the bottom */}
         <div>
           <h3 className="text-2xl font-semibold text-center mb-8 text-gray-800 tracking-wide uppercase">
             Production Team

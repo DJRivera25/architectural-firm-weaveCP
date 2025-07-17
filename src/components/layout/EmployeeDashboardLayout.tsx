@@ -13,12 +13,14 @@ import {
   HomeIcon,
   CalendarDaysIcon,
   Cog6ToothIcon,
+  UsersIcon,
 } from "@heroicons/react/24/solid";
 import { useEffect, useRef, useState } from "react";
 
 const navItems = [
   { label: "Dashboard", href: "/employee-dashboard", icon: <HomeIcon className="w-5 h-5 mr-3" /> },
   { label: "Tasks", href: "/employee-dashboard/tasks", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
+  { label: "Team", href: "/employee-dashboard/team", icon: <UsersIcon className="w-5 h-5 mr-3" /> },
   { label: "Kanban Board", href: "/employee-dashboard/tasks/kanban", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
   { label: "Time Logs", href: "/employee-dashboard/timelogs", icon: <ClockIcon className="w-5 h-5 mr-3" /> },
   {

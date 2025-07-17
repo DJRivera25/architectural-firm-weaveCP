@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import Head from "next/head";
+import { ToastProvider } from "@/components/providers/ToastProvider";
 
 export const metadata: Metadata = {
   title: "Weave Collaboration Partners",
@@ -37,8 +38,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" href="/favicon.png" />
       </Head>
       <body>
-        <AuthProvider>{children}</AuthProvider>
-        <Toaster position="top-right" />
+        <ToastProvider>
+          <AuthProvider>{children}</AuthProvider>
+          <Toaster position="top-right" />
+        </ToastProvider>
       </body>
     </html>
   );

@@ -3,28 +3,39 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-const portfolioItems = [
+export type PortfolioItem = {
+  title: string;
+  category: string;
+  image: string;
+};
+
+export type PortfolioPreviewProps = {
+  items?: PortfolioItem[];
+  intro?: string;
+};
+
+const defaultItems: PortfolioItem[] = [
   {
-    id: 1,
     title: "Modern Office Complex",
     category: "Commercial",
     image: "/api/placeholder/400/300",
   },
   {
-    id: 2,
     title: "Luxury Residential Villa",
     category: "Residential",
     image: "/api/placeholder/400/300",
   },
   {
-    id: 3,
     title: "Sustainable Community Center",
     category: "Public",
     image: "/api/placeholder/400/300",
   },
 ];
 
-export default function PortfolioPreview() {
+export default function PortfolioPreview({
+  items = defaultItems,
+  intro = "Explore our portfolio of innovative architectural designs that showcase our commitment to excellence and creativity.",
+}: PortfolioPreviewProps) {
   return (
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,15 +56,13 @@ export default function PortfolioPreview() {
             viewport={{ once: true }}
             className="text-xl text-gray-600 max-w-3xl mx-auto"
           >
-            Explore our portfolio of innovative architectural designs that showcase our commitment to excellence and
-            creativity.
+            {intro}
           </motion.p>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {portfolioItems.map((item, index) => (
+          {items.map((item, index) => (
             <motion.div
-              key={item.id}
+              key={item.title + index}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: index * 0.1 }}
@@ -61,25 +70,18 @@ export default function PortfolioPreview() {
               className="group cursor-pointer"
             >
               <div className="bg-gray-200 rounded-lg h-64 mb-4 overflow-hidden relative">
+                {item.image && item.image !== "" && (
+                  <img src={item.image} alt={item.title} className="object-cover w-full h-full" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                   <p className="text-blue-200">{item.category}</p>
                 </div>
-                <div className="w-full h-full flex items-center justify-center text-gray-500">
-                  <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
               </div>
             </motion.div>
           ))}
         </div>
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
