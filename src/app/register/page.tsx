@@ -65,6 +65,7 @@ export default function RegisterPage() {
 
   // Persist timer/email to localStorage
   useEffect(() => {
+    if (typeof window === "undefined") return;
     if (success && email) {
       if (timer > 0) {
         localStorage.setItem(LS_KEY, JSON.stringify({ email, start: Date.now() - (COUNTDOWN_SECONDS - timer) * 1000 }));
@@ -77,7 +78,7 @@ export default function RegisterPage() {
   // Clear localStorage on unmount if not in success state
   useEffect(() => {
     return () => {
-      if (!success) localStorage.removeItem(LS_KEY);
+      if (typeof window !== "undefined" && !success) localStorage.removeItem(LS_KEY);
     };
   }, [success]);
 
@@ -90,7 +91,9 @@ export default function RegisterPage() {
       await registerUser(data);
       setSuccess(true);
       setTimer(COUNTDOWN_SECONDS);
-      localStorage.setItem(LS_KEY, JSON.stringify({ email: data.email, start: Date.now() }));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(LS_KEY, JSON.stringify({ email: data.email, start: Date.now() }));
+      }
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       setServerError(error.response?.data?.message || "Registration failed");
@@ -104,7 +107,9 @@ export default function RegisterPage() {
       await confirmUser(email);
       setResendMessage("Confirmation email resent. Please check your inbox.");
       setTimer(COUNTDOWN_SECONDS);
-      localStorage.setItem(LS_KEY, JSON.stringify({ email, start: Date.now() }));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(LS_KEY, JSON.stringify({ email, start: Date.now() }));
+      }
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       setResendMessage(error.response?.data?.message || "Failed to resend email.");

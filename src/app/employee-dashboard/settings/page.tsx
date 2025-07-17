@@ -40,22 +40,25 @@ export default function EmployeeSettingsPage() {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
   const [resendError, setResendError] = useState("");
-  const [resendCountdown, setResendCountdown] = useState(() => {
-    const ts = localStorage.getItem("emp-reset-cooldown");
-    if (ts) {
-      const diff = Math.floor((parseInt(ts) - Date.now()) / 1000);
-      return diff > 0 ? diff : 0;
-    }
-    return 0;
-  });
+  const [resendCountdown, setResendCountdown] = useState(0);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     let timer: NodeJS.Timeout;
     if (resendCountdown > 0) {
       timer = setTimeout(() => setResendCountdown(resendCountdown - 1), 1000);
     }
     return () => clearTimeout(timer);
   }, [resendCountdown]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const ts = localStorage.getItem("emp-reset-cooldown");
+    if (ts) {
+      const diff = Math.floor((parseInt(ts) - Date.now()) / 1000);
+      setResendCountdown(diff > 0 ? diff : 0);
+    }
+  }, []);
 
   const handleSendCode = async () => {
     setResendLoading(true);
@@ -64,8 +67,10 @@ export default function EmployeeSettingsPage() {
     try {
       await requestPasswordReset(userEmail);
       setResendMessage("Verification code sent. Please check your email.");
-      const next = Date.now() + 60 * 1000;
-      localStorage.setItem("emp-reset-cooldown", next.toString());
+      if (typeof window !== "undefined") {
+        const next = Date.now() + 60 * 1000;
+        localStorage.setItem("emp-reset-cooldown", next.toString());
+      }
       setResendCountdown(60);
     } catch (err: unknown) {
       setResendError("Failed to send code. Please try again.");
