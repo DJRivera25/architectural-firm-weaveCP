@@ -9,12 +9,12 @@ export const metadata: Metadata = {
   description:
     "Leading architectural firm specializing in innovative design solutions, sustainable architecture, and exceptional client experiences.",
   keywords: "architecture, design, sustainable, innovative, construction, planning",
-  authors: [{ name: "Architectural Firm" }],
+  authors: [{ name: "Weave Collaboration Partners" }],
   icons: {
-    icon: "/favicon.png", // path from public folder
+    icon: "/weave-symbol-tri.png", // path from public folder
   },
   openGraph: {
-    title: "Architectural Firm - Innovative Design Solutions",
+    title: "Weave Colloboration Partners",
     description:
       "Leading architectural firm specializing in innovative design solutions, sustainable architecture, and exceptional client experiences.",
     type: "website",
