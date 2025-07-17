@@ -12,15 +12,19 @@ const schema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  registrationToken: z.string().min(6, "Registration token is required"),
 });
 
 type FormData = z.infer<typeof schema>;
+
+const COUNTDOWN_SECONDS = 30;
+const LS_KEY = "register-success";
 
 export default function RegisterPage() {
   const [serverError, setServerError] = useState("");
   const [success, setSuccess] = useState(false);
   const [email, setEmail] = useState("");
-  const [timer, setTimer] = useState(300); // 5 minutes in seconds
+  const [timer, setTimer] = useState(COUNTDOWN_SECONDS);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -31,6 +35,25 @@ export default function RegisterPage() {
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
+  // Restore state from localStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem(LS_KEY);
+    if (saved) {
+      try {
+        const { email: savedEmail, start } = JSON.parse(saved);
+        if (savedEmail && start) {
+          setSuccess(true);
+          setEmail(savedEmail);
+          const elapsed = Math.floor((Date.now() - start) / 1000);
+          const remaining = COUNTDOWN_SECONDS - elapsed;
+          setTimer(remaining > 0 ? remaining : 0);
+        }
+      } catch {}
+    }
+  }, []);
+
+  // Timer logic
   useEffect(() => {
     if (success && timer > 0) {
       timerRef.current = setTimeout(() => setTimer((t) => t - 1), 1000);
@@ -40,6 +63,24 @@ export default function RegisterPage() {
     };
   }, [success, timer]);
 
+  // Persist timer/email to localStorage
+  useEffect(() => {
+    if (success && email) {
+      if (timer > 0) {
+        localStorage.setItem(LS_KEY, JSON.stringify({ email, start: Date.now() - (COUNTDOWN_SECONDS - timer) * 1000 }));
+      } else {
+        localStorage.setItem(LS_KEY, JSON.stringify({ email, start: Date.now() - COUNTDOWN_SECONDS * 1000 }));
+      }
+    }
+  }, [success, email, timer]);
+
+  // Clear localStorage on unmount if not in success state
+  useEffect(() => {
+    return () => {
+      if (!success) localStorage.removeItem(LS_KEY);
+    };
+  }, [success]);
+
   const onSubmit = async (data: FormData) => {
     setServerError("");
     setSuccess(false);
@@ -48,7 +89,8 @@ export default function RegisterPage() {
     try {
       await registerUser(data);
       setSuccess(true);
-      setTimer(300); // Reset timer on registration
+      setTimer(COUNTDOWN_SECONDS);
+      localStorage.setItem(LS_KEY, JSON.stringify({ email: data.email, start: Date.now() }));
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       setServerError(error.response?.data?.message || "Registration failed");
@@ -61,7 +103,8 @@ export default function RegisterPage() {
     try {
       await confirmUser(email);
       setResendMessage("Confirmation email resent. Please check your inbox.");
-      setTimer(300); // Restart timer
+      setTimer(COUNTDOWN_SECONDS);
+      localStorage.setItem(LS_KEY, JSON.stringify({ email, start: Date.now() }));
     } catch (err) {
       const error = err as AxiosError<{ message?: string }>;
       setResendMessage(error.response?.data?.message || "Failed to resend email.");
@@ -140,6 +183,18 @@ export default function RegisterPage() {
                 autoComplete="new-password"
               />
               {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
+            </div>
+            <div>
+              <label className="block mb-1 font-medium text-gray-700">Registration Token</label>
+              <input
+                type="text"
+                {...register("registrationToken")}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                autoComplete="off"
+              />
+              {errors.registrationToken && (
+                <p className="text-red-600 text-sm mt-1">{errors.registrationToken.message}</p>
+              )}
             </div>
             {serverError && <p className="text-red-600 text-sm text-center">{serverError}</p>}
             <button

@@ -39,6 +39,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           image: user.image,
+          position: user.position,
+          team: user.team,
         };
       },
     }),
@@ -63,6 +65,8 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           role: user.role,
           image: user.image,
+          position: user.position,
+          team: user.team,
         };
       },
     }),
@@ -77,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id; // Add user id to token
         token.position = user.position;
         token.team = user.team;
+        token.image = user.image;
       }
       return token;
     },
@@ -86,6 +91,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string; // Add user id to session
         session.user.position = token.position as string | null;
         session.user.team = token.team as string | null;
+        session.user.image = token.image as string | null;
       }
       return session;
     },

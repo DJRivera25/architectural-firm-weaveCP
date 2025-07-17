@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import toast from "react-hot-toast";
 import { getUserById, updateUserById } from "@/utils/api";
-import EmployeeDashboardLayout from "@/components/layout/EmployeeDashboardLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import Image from "next/image";
 import { uploadProfileImage } from "@/utils/api";
 
@@ -20,7 +20,7 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function EmployeeProfilePage() {
+export default function AdminProfilePage() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -87,7 +87,7 @@ export default function EmployeeProfilePage() {
   };
 
   return (
-    <EmployeeDashboardLayout>
+    <DashboardLayout>
       <div className="max-w-7xl mx-auto mt-8 animate-fadeInSlow">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden p-0 flex flex-col md:flex-row">
           <div className="md:w-1/2 p-10 flex flex-col justify-center">
@@ -150,6 +150,6 @@ export default function EmployeeProfilePage() {
           </div>
         </div>
       </div>
-    </EmployeeDashboardLayout>
+    </DashboardLayout>
   );
 }

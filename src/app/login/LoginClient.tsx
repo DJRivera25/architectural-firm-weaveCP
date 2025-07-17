@@ -9,8 +9,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { confirmUser } from "@/utils/api";
-import ResendConfirmationModal from "@/components/ui/ResendConfirmationModal";
+import { confirmUser, requestPasswordReset } from "@/utils/api";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -24,10 +23,11 @@ export default function LoginClient() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const { status } = useSession();
-  const [showResendModal, setShowResendModal] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendMessage, setResendMessage] = useState("");
-  const [resendError, setResendError] = useState("");
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState("");
+  const [forgotError, setForgotError] = useState("");
+  const [forgotEmail, setForgotEmail] = useState("");
 
   useEffect(() => {
     if (error) {
@@ -86,31 +86,17 @@ export default function LoginClient() {
     signIn("google", { callbackUrl: "/dashboard?justLoggedIn=1" });
   };
 
-  const handleResend = async (email: string) => {
-    setResendLoading(true);
-    setResendMessage("");
-    setResendError("");
+  const handleForgot = async () => {
+    setForgotLoading(true);
+    setForgotMessage("");
+    setForgotError("");
     try {
-      await confirmUser(email);
-      setResendMessage("Confirmation email resent. Please check your inbox.");
+      await requestPasswordReset(forgotEmail);
+      setForgotMessage("If that email exists, a verification code has been sent.");
     } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-      ) {
-        setResendError((err.response.data as { message?: string }).message || "Failed to resend email.");
-      } else {
-        setResendError("Failed to resend email.");
-      }
+      setForgotError("Failed to send reset code. Please try again.");
     } finally {
-      setResendLoading(false);
+      setForgotLoading(false);
     }
   };
 
@@ -199,26 +185,63 @@ export default function LoginClient() {
           <button
             className="text-blue-600 hover:underline mt-2 focus:outline-none font-medium"
             type="button"
-            onClick={() => setShowResendModal(true)}
+            onClick={() => setShowForgotModal(true)}
           >
-            Didn&apos;t receive confirmation email?
+            Forgot password?
           </button>
         </div>
-        <ResendConfirmationModal
-          isOpen={showResendModal}
-          onClose={() => {
-            setShowResendModal(false);
-            setResendMessage("");
-            setResendError("");
-          }}
-          onResend={handleResend}
-          loading={resendLoading}
-          message={resendMessage}
-          error={resendError}
-          showToast={(msg: string, type: "success" | "error") =>
-            type === "success" ? toast.success(msg) : toast.error(msg)
-          }
-        />
+        {showForgotModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+            <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-sm relative">
+              <button
+                className="absolute top-2 right-2 text-gray-400 hover:text-gray-700"
+                onClick={() => {
+                  setShowForgotModal(false);
+                  setForgotMessage("");
+                  setForgotError("");
+                  setForgotEmail("");
+                }}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              <h3 className="text-lg font-bold mb-2 text-blue-800">Forgot Password</h3>
+              <p className="mb-4 text-gray-600 text-sm">
+                Enter your email and we&apos;ll send you a 6-character verification code to reset your password.
+              </p>
+              <input
+                type="email"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition mb-2"
+                placeholder="Email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                autoFocus
+              />
+              {forgotError && <div className="text-red-600 text-sm mb-2">{forgotError}</div>}
+              {forgotMessage && (
+                <div className="text-green-700 text-sm mb-2 flex flex-col items-center gap-2">
+                  <div>{forgotMessage}</div>
+                  <div className="text-gray-700 text-xs">
+                    Enter the code and your new password on the <b>Reset Password</b> page.
+                  </div>
+                  <a
+                    href="/reset-password"
+                    className="mt-1 inline-block bg-blue-600 text-white px-4 py-1.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-blue-400 text-xs"
+                  >
+                    Go to Reset Password
+                  </a>
+                </div>
+              )}
+              <button
+                className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+                onClick={handleForgot}
+                disabled={forgotLoading || !forgotEmail}
+              >
+                {forgotLoading ? "Sending..." : "Send Verification Code"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

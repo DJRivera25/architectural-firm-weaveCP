@@ -26,9 +26,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<UploadRes
   if (!session || !session.user?.id) {
     return NextResponse.json({ message: "Unauthorized", error: "Unauthorized" }, { status: 401 });
   }
-  if (session.user.role !== "admin" && session.user.role !== "manager") {
-    return NextResponse.json({ message: "Forbidden", error: "Forbidden" }, { status: 403 });
-  }
   try {
     const formData = await request.formData();
     const file = formData.get("file");

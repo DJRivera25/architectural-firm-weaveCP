@@ -27,9 +27,12 @@ export const deleteContent = (id: string) => api.delete(`/content/${id}`);
 export const getTeam = () => api.get<IUser[]>("/team");
 export const updateTeamMember = (id: string, data: Partial<IUser>) => api.patch<IUser>(`/team/${id}`, data);
 
-// --- Users (admin) ---
+// --- Users (admin & profile) ---
 export const getUsers = (team?: string) => api.get<IUser[]>(`/users${team ? `?team=${team}` : ""}`);
-export const updateUser = (id: string, data: Partial<IUser>) => api.patch<IUser>(`/users/${id}`, data);
+export const getUserById = (id: string) => api.get<IUser>(`/users/${id}`);
+export const updateUserById = (id: string, data: Partial<IUser>) => api.patch<IUser>(`/users/${id}`, data);
+// Deprecated: use getUserById/updateUserById for profile
+export const updateUser = updateUserById;
 
 // --- Jobs ---
 export const getJobs = () => api.get<JobData[]>("/jobs");
@@ -96,5 +99,25 @@ export const createLeaveCredit = (data: Omit<LeaveCredit, "_id" | "createdAt" | 
 // --- Auth ---
 export const registerUser = (data: Record<string, unknown>) => api.post("/auth/register", data);
 export const confirmUser = (email: string) => api.post("/auth/confirm", { email });
+
+// --- Password Reset ---
+export const requestPasswordReset = (email: string) =>
+  api.post<{ success: boolean }>("/auth/request-password-reset", { email });
+
+export const resetPassword = (data: { email: string; code: string; password: string }) =>
+  api.post<{ success: boolean }>("/auth/reset-password", data);
+
+// --- Registration Token (Admin) ---
+export const generateRegistrationToken = () => api.post<{ token: string }>("/auth/generate-registration-token");
+
+// --- Profile Image Upload ---
+export const uploadProfileImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await api.post<{ url: string }>("/upload", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data.url;
+};
 
 export { api };

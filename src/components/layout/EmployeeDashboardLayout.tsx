@@ -12,6 +12,7 @@ import {
   UserCircleIcon,
   HomeIcon,
   CalendarDaysIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/solid";
 import { useEffect, useRef, useState } from "react";
 
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Notifications", href: "/employee-dashboard/notifications", icon: <BellIcon className="w-5 h-5 mr-3" /> },
   { label: "Profile", href: "/employee-dashboard/profile", icon: <UserCircleIcon className="w-5 h-5 mr-3" /> },
   { label: "Calendar", href: "/employee-dashboard/calendar", icon: <CalendarDaysIcon className="w-5 h-5 mr-3" /> },
+  { label: "Settings", href: "/employee-dashboard/settings", icon: <Cog6ToothIcon className="w-5 h-5 mr-3" /> },
 ];
 
 export default function EmployeeDashboardLayout({ children }: { children: ReactNode }) {

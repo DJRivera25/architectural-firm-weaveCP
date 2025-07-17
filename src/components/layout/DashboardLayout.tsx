@@ -16,6 +16,7 @@ import {
   Cog6ToothIcon,
   CalendarDaysIcon,
   CalendarIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
@@ -29,7 +30,7 @@ const navItems = [
   { label: "Leave Management", href: "/dashboard/leaves", icon: <CalendarDaysIcon className="w-5 h-5 mr-3" /> },
   { label: "Calendar", href: "/dashboard/calendar", icon: <CalendarIcon className="w-5 h-5 mr-3" /> },
   { label: "Notifications", href: "/dashboard/notifications", icon: <BellIcon className="w-5 h-5 mr-3" /> },
-  { label: "Settings", href: "/dashboard/settings", icon: <Cog6ToothIcon className="w-5 h-5 mr-3" /> },
+  { label: "Profile", href: "/dashboard/profile", icon: <UserCircleIcon className="w-5 h-5 mr-3" /> },
 ];
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
@@ -83,6 +84,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-6">
             <NotificationBell />
+            <a href="/dashboard/settings" className="hover:bg-blue-100 rounded-full p-2 transition-colors">
+              <Cog6ToothIcon className="w-8 h-8 text-blue-800" />
+            </a>
             {userImage ? (
               <Image
                 src={userImage}

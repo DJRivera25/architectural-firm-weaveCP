@@ -14,6 +14,9 @@ export interface IUser extends mongoose.Document {
   updatedAt: Date;
   isEmailConfirmed: boolean;
   emailConfirmationToken: string;
+  passwordResetToken: string;
+  passwordResetExpires: Date;
+  registrationToken?: string;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -59,6 +62,18 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     emailConfirmationToken: {
       type: String,
+    },
+    passwordResetToken: {
+      type: String,
+      required: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      required: false,
+    },
+    registrationToken: {
+      type: String,
+      required: false,
     },
   },
   {
