@@ -10,16 +10,22 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       role?: string | null;
+      position?: string | null;
+      team?: string | null;
     } & DefaultSession["user"];
   }
 
   interface User extends DefaultUser {
     role?: string | null;
+    position?: string | null;
+    team?: string | null;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     role?: string | null;
+    position?: string | null;
+    team?: string | null;
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchNotifications, markNotificationRead, deleteNotification } from "@/utils/notification";
+import { getNotifications, markNotificationRead, deleteNotification } from "@/utils/api";
 import { Notification } from "@/types/notification";
 import toast from "react-hot-toast";
 
@@ -11,15 +11,21 @@ export default function NotificationBell() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => {
-    fetchNotifications()
-      .then(setNotifications)
-      .catch(() => toast.error("Failed to load notifications"));
+    const fetchNotifications = async () => {
+      try {
+        const res = await getNotifications();
+        setNotifications(res.data);
+      } catch {
+        toast.error("Failed to load notifications");
+      }
+    };
+    fetchNotifications();
   }, []);
 
   const handleMarkRead = async (id: string) => {
     try {
-      const updated = await markNotificationRead(id);
-      setNotifications((prev) => prev.map((n) => (n._id === id ? updated : n)));
+      const res = await markNotificationRead(id);
+      setNotifications((prev) => prev.map((n) => (n._id === id ? res.data : n)));
     } catch {
       toast.error("Failed to mark as read");
     }

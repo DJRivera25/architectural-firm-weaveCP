@@ -1,11 +1,15 @@
 import mongoose from "mongoose";
 
 export interface IUser extends mongoose.Document {
+  _id: string;
   name: string;
   email: string;
   password: string;
-  role: "admin" | "employee";
+  role: "owner" | "admin" | "employee" | "manager";
+  team?: "production" | "management" | "admin";
+  position?: string;
   image?: string;
+  isActive?: boolean;
   createdAt: Date;
   updatedAt: Date;
   isEmailConfirmed: boolean;
@@ -33,8 +37,18 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["admin", "employee"],
+      enum: ["owner", "admin", "employee", "manager"],
       default: "employee",
+    },
+    team: {
+      type: String,
+      enum: ["production", "management", "admin"],
+      required: false,
+    },
+    position: {
+      type: String,
+      trim: true,
+      required: false,
     },
     image: {
       type: String,

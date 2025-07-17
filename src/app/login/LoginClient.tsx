@@ -9,8 +9,8 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import api from "@/utils/axios";
-import ResendConfirmationModal from "@/components/ResendConfirmationModal";
+import { confirmUser } from "@/utils/api";
+import ResendConfirmationModal from "@/components/ui/ResendConfirmationModal";
 
 const schema = z.object({
   email: z.string().email("Invalid email"),
@@ -23,7 +23,7 @@ export default function LoginClient() {
   const [serverError, setServerError] = useState("");
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [showResendModal, setShowResendModal] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
@@ -68,7 +68,17 @@ export default function LoginClient() {
       toast.error(res.error || "Login failed");
     } else {
       toast.success("Login successful!");
-      window.location.href = "/dashboard";
+      // Wait for session to update
+      setTimeout(async () => {
+        const sessionRes = await fetch("/api/auth/session");
+        const sessionData = await sessionRes.json();
+        const role = sessionData?.user?.role;
+        if (role === "employee") {
+          window.location.href = "/employee-dashboard";
+        } else {
+          window.location.href = "/dashboard";
+        }
+      }, 500);
     }
   };
 
@@ -81,7 +91,7 @@ export default function LoginClient() {
     setResendMessage("");
     setResendError("");
     try {
-      await api.post("/auth/confirm", { email });
+      await confirmUser(email);
       setResendMessage("Confirmation email resent. Please check your inbox.");
     } catch (err: unknown) {
       if (

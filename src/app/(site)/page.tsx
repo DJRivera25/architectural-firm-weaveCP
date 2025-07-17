@@ -1,13 +1,13 @@
 import { Suspense } from "react";
 import Head from "next/head";
-import HeroSection from "@/components/HeroSection";
-import AboutPreview from "@/components/AboutPreview";
-import ProcessPreview from "@/components/ProcessPreview";
-import PortfolioPreview from "@/components/PortfolioPreview";
-import ContactCTA from "@/components/ContactCTA";
-import ScrollToContactOnLoad from "@/components/ScrollToContactOnLoad";
-import { WhyWeaveSection } from "@/components/AboutPreview";
-import OurTeam from "@/components/OurTeam";
+import HeroSection from "@/components/ui/HeroSection";
+import AboutPreview from "@/components/ui/AboutPreview";
+import ProcessPreview from "@/components/ui/ProcessPreview";
+import PortfolioPreview from "@/components/ui/PortfolioPreview";
+import ContactCTA from "@/components/ui/ContactCTA";
+import ScrollToContactOnLoad from "@/components/ui/ScrollToContactOnLoad";
+import { WhyWeaveSection } from "@/components/ui/AboutPreview";
+import OurTeam from "@/components/ui/OurTeam";
 
 export default function Home() {
   return (

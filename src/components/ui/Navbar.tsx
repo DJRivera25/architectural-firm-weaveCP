@@ -3,9 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { motion } from "framer-motion";
 import { ExtendedSession } from "@/types";
-import NotificationBell from "@/components/NotificationBell";
+import NotificationBell from "@/components/ui/NotificationBell";
 import Image from "next/image";
 import { Fragment, useRef } from "react";
 import { Menu, Transition } from "@headlessui/react";

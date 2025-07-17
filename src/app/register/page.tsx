@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
-import api from "@/utils/axios";
+import { registerUser, confirmUser } from "@/utils/api";
 import { AxiosError } from "axios";
 
 const schema = z.object({
@@ -29,7 +29,6 @@ export default function RegisterPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    getValues,
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
   useEffect(() => {
@@ -47,7 +46,7 @@ export default function RegisterPage() {
     setResendMessage("");
     setEmail(data.email);
     try {
-      const res = await api.post("/auth/register", data);
+      await registerUser(data);
       setSuccess(true);
       setTimer(300); // Reset timer on registration
     } catch (err) {
@@ -60,7 +59,7 @@ export default function RegisterPage() {
     setResendLoading(true);
     setResendMessage("");
     try {
-      await api.post("/auth/confirm", { email });
+      await confirmUser(email);
       setResendMessage("Confirmation email resent. Please check your inbox.");
       setTimer(300); // Restart timer
     } catch (err) {

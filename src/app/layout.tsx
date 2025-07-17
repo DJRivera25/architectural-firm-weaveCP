@@ -1,22 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { Toaster } from "react-hot-toast";
-import { Archivo, Archivo_Narrow, Work_Sans } from "next/font/google";
-
-const archivo = Archivo({ subsets: ["latin"], variable: "--font-archivo" });
-const archivoNarrow = Archivo_Narrow({ subsets: ["latin"], variable: "--font-archivo-narrow" });
-const workSans = Work_Sans({ subsets: ["latin"], variable: "--font-work-sans" });
+import Head from "next/head";
 
 export const metadata: Metadata = {
-  title: "Architectural Firm - Innovative Design Solutions",
+  title: "Weave Collaboration Partners",
   description:
     "Leading architectural firm specializing in innovative design solutions, sustainable architecture, and exceptional client experiences.",
   keywords: "architecture, design, sustainable, innovative, construction, planning",
   authors: [{ name: "Architectural Firm" }],
+  icons: {
+    icon: "/favicon.png", // path from public folder
+  },
   openGraph: {
     title: "Architectural Firm - Innovative Design Solutions",
     description:
@@ -28,15 +24,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${archivoNarrow.variable} ${workSans.variable}`}>
+    <html lang="en">
+      <Head>
+        <link rel="icon" type="image/png" href="/favicon.png" />
+      </Head>
       <body>
-        <AuthProvider>
-          <div className="min-h-screen flex flex-col">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
         <Toaster position="top-right" />
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useEffect, useRef, useState, MutableRefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 export default function HeroSection() {
@@ -18,7 +18,7 @@ export default function HeroSection() {
     function animate(timestamp: number) {
       if (!start) start = timestamp;
       const progress = Math.min((timestamp - start) / duration, 1);
-      setReveal((prev) => (direction === 1 ? progress : 1 - progress));
+      setReveal(direction === 1 ? progress : 1 - progress);
       if (progress < 1) {
         requestRef.current = requestAnimationFrame(animate);
       } else {
