@@ -4,6 +4,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { LeaveWithUser, LeaveStatus, LeaveType } from "@/types";
 import { updateLeaveRequest, deleteLeaveRequest } from "@/utils/api";
+import {
+  UserIcon,
+  CalendarIcon,
+  ClipboardDocumentListIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
 interface LeaveRequestCardProps {
   leave: LeaveWithUser;
@@ -91,54 +101,72 @@ export default function LeaveRequestCard({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">{leave.user?.name || "Unknown User"}</h3>
-          <p className="text-sm text-gray-600">{leave.user?.email || "No email available"}</p>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
+      {/* Header: User info and badges */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 text-blue-600">
+            <UserIcon className="w-6 h-6" />
+          </span>
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 leading-tight">{leave.user?.name || "Unknown User"}</h3>
+            <p className="text-xs text-gray-500">{leave.user?.email || "No email available"}</p>
+          </div>
         </div>
-        <div className="flex space-x-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLeaveTypeColor(leave.leaveType)}`}>
+        <div className="flex flex-col items-end gap-1">
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getLeaveTypeColor(
+              leave.leaveType
+            )}`}
+          >
+            <ClipboardDocumentListIcon className="w-4 h-4 mr-1" />
             {leave.leaveType.replace("_", " ")}
           </span>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(leave.status)}`}>
-            {leave.status}
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+              leave.status
+            )}`}
+          >
+            {leave.status === LeaveStatus.APPROVED && <CheckCircleIcon className="w-4 h-4 mr-1" />}
+            {leave.status === LeaveStatus.REJECTED && <XCircleIcon className="w-4 h-4 mr-1" />}
+            {leave.status === LeaveStatus.PENDING && <ClockIcon className="w-4 h-4 mr-1" />}
+            {leave.status.charAt(0).toUpperCase() + leave.status.slice(1)}
           </span>
         </div>
       </div>
 
-      <div className="space-y-3 mb-4">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Duration:</span>
-          <span className="font-medium">{calculateDays()} days</span>
+      {/* Details Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm mb-2">
+        <div className="flex items-center gap-2">
+          <CalendarIcon className="w-4 h-4 text-gray-400" />
+          <span className="font-medium text-gray-700">
+            {new Date(leave.startDate).toLocaleDateString()} - {new Date(leave.endDate).toLocaleDateString()}
+          </span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Start Date:</span>
-          <span className="font-medium">{new Date(leave.startDate).toLocaleDateString()}</span>
+        <div className="flex items-center gap-2">
+          <ClipboardDocumentListIcon className="w-4 h-4 text-gray-400" />
+          <span className="font-medium text-gray-700">{calculateDays()} days</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">End Date:</span>
-          <span className="font-medium">{new Date(leave.endDate).toLocaleDateString()}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Reason:</span>
-          <span className="font-medium">{leave.reason}</span>
+        <div className="flex items-center gap-2 col-span-2">
+          <span className="font-semibold text-gray-600">Reason:</span>
+          <span className="text-gray-700">{leave.reason}</span>
         </div>
       </div>
 
+      {/* Description */}
       {leave.description && (
-        <div className="mb-4">
-          <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">{leave.description}</p>
-        </div>
+        <div className="bg-gray-50 rounded p-3 text-sm text-gray-700 mb-2">{leave.description}</div>
       )}
 
-      <div className="flex justify-between items-center text-xs text-gray-500">
+      {/* Footer: Submitted/Updated */}
+      <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
         <span>Submitted: {new Date(leave.createdAt).toLocaleDateString()}</span>
         {leave.updatedAt !== leave.createdAt && <span>Updated: {new Date(leave.updatedAt).toLocaleDateString()}</span>}
       </div>
 
+      {/* Action Buttons */}
       {(canApprove || canEdit || canDelete) && (
-        <div className="flex justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
+        <div className="flex flex-wrap justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
           {canApprove && leave.status === LeaveStatus.PENDING && (
             <>
               <Button
@@ -147,14 +175,13 @@ export default function LeaveRequestCard({
                 onClick={() => handleStatusUpdate(LeaveStatus.REJECTED)}
                 disabled={isLoading}
               >
-                Reject
+                <XCircleIcon className="w-4 h-4 mr-1" /> Reject
               </Button>
               <Button size="sm" onClick={() => handleStatusUpdate(LeaveStatus.APPROVED)} disabled={isLoading}>
-                Approve
+                <CheckCircleIcon className="w-4 h-4 mr-1" /> Approve
               </Button>
             </>
           )}
-
           {canEdit && leave.status === LeaveStatus.PENDING && (
             <Button
               size="sm"
@@ -164,13 +191,12 @@ export default function LeaveRequestCard({
               }}
               disabled={isLoading}
             >
-              Edit
+              <PencilIcon className="w-4 h-4 mr-1" /> Edit
             </Button>
           )}
-
           {canDelete && leave.status === LeaveStatus.PENDING && (
             <Button size="sm" variant="outline" onClick={handleDelete} disabled={isLoading}>
-              Delete
+              <TrashIcon className="w-4 h-4 mr-1" /> Delete
             </Button>
           )}
         </div>

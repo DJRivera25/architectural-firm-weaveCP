@@ -132,4 +132,10 @@ export const uploadProfileImage = async (file: File): Promise<string> => {
   return res.data.url;
 };
 
+export async function getMyTeams() {
+  const res = await fetch("/api/team/my-teams");
+  if (!res.ok) throw new Error("Failed to fetch my teams");
+  return res.json();
+}
+
 export { api };

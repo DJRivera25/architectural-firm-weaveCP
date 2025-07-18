@@ -22,7 +22,16 @@ async function fetchSection(section: string) {
 }
 
 export default async function Home() {
-  const [hero, about, whyWeave, process, portfolio, team, contact, footer] = await Promise.all([
+  // Test database connection
+  try {
+    const { connectDB } = await import("@/lib/db");
+    await connectDB();
+    console.log("✅ Database connection successful in home page");
+  } catch (error) {
+    console.error("❌ Database connection failed in home page:", error);
+  }
+
+  const [hero, about, whyWeave, process, portfolio, team, contact] = await Promise.all([
     fetchSection("hero"),
     fetchSection("about"),
     fetchSection("why-weave"),

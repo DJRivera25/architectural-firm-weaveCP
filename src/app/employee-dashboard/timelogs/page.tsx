@@ -1,16 +1,60 @@
 "use client";
-
 import { useEffect, useState, useMemo } from "react";
 import EmployeeDashboardLayout from "@/components/layout/EmployeeDashboardLayout";
+import { cn } from "@/lib/utils";
 import { TimeLogData, Project, Task } from "@/types";
-import { PlusIcon, ClockIcon, CalendarIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import {
+  ClockIcon,
+  PlusIcon,
+  CalendarDaysIcon,
+  MagnifyingGlassIcon,
+  PlayIcon,
+  PauseIcon,
+  CheckIcon,
+  ExclamationTriangleIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  BriefcaseIcon,
+  DocumentTextIcon,
+  UserIcon,
+  ChartBarIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
+
+interface TimeLogStats {
+  totalHours: number;
+  thisWeekHours: number;
+  lastWeekHours: number;
+  thisMonthHours: number;
+  overtimeHours: number;
+  averageDailyHours: number;
+  totalEntries: number;
+  currentStreak: number;
+  productivityScore: number;
+  weeklyTrend: "up" | "down";
+  monthlyTrend: "up" | "down";
+}
 
 export default function EmployeeTimeLogsPage() {
   const [timeLogs, setTimeLogs] = useState<(TimeLogData & { _id: string; project?: Project; task?: Task })[]>([]);
+  const [stats, setStats] = useState<TimeLogStats>({
+    totalHours: 0,
+    thisWeekHours: 0,
+    lastWeekHours: 0,
+    thisMonthHours: 0,
+    overtimeHours: 0,
+    averageDailyHours: 0,
+    totalEntries: 0,
+    currentStreak: 0,
+    productivityScore: 0,
+    weeklyTrend: "up",
+    monthlyTrend: "up",
+  });
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("week");
-  const [showAdd, setShowAdd] = useState(false);
+  const [projectFilter, setProjectFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     fetchTimeLogs();
@@ -18,32 +62,88 @@ export default function EmployeeTimeLogsPage() {
 
   const fetchTimeLogs = async () => {
     setLoading(true);
-    const res = await fetch("/api/timelogs");
-    if (res.ok) {
-      const data = await res.json();
-      setTimeLogs(data);
+    try {
+      const res = await fetch("/api/timelogs");
+      if (res.ok) {
+        const data = await res.json();
+        setTimeLogs(data);
+        calculateStats(data);
+      }
+    } catch (error) {
+      console.error("Error fetching time logs:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  // Stats
-  const stats = useMemo(() => {
+  const calculateStats = (logs: (TimeLogData & { _id: string; project?: Project; task?: Task })[]) => {
     const now = new Date();
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - now.getDay());
+    const lastWeekStart = new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const weekLogs = timeLogs.filter((log) => new Date(log.date) >= weekStart);
-    const monthLogs = timeLogs.filter((log) => new Date(log.date) >= monthStart);
-    const totalWeek = weekLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
-    const totalMonth = monthLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
-    const overtime = timeLogs.reduce((sum, log) => sum + (log.overtimeHours || 0), 0);
-    return { totalWeek, totalMonth, overtime, entries: timeLogs.length };
-  }, [timeLogs]);
 
-  // Filtered logs
-  const filtered = useMemo(() => {
+    const thisWeekLogs = logs.filter((log) => new Date(log.date) >= weekStart);
+    const lastWeekLogs = logs.filter((log) => {
+      const logDate = new Date(log.date);
+      return logDate >= lastWeekStart && logDate < weekStart;
+    });
+    const thisMonthLogs = logs.filter((log) => new Date(log.date) >= monthStart);
+
+    const totalHours = logs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
+    const thisWeekHours = thisWeekLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
+    const lastWeekHours = lastWeekLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
+    const thisMonthHours = thisMonthLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
+    const overtimeHours = logs.reduce((sum, log) => sum + (log.overtimeHours || 0), 0);
+    const averageDailyHours = logs.length > 0 ? totalHours / logs.length : 0;
+
+    // Calculate current streak (consecutive days with time logs)
+    let currentStreak = 0;
+    const sortedLogs = logs.map((log) => new Date(log.date)).sort((a, b) => b.getTime() - a.getTime());
+
+    if (sortedLogs.length > 0) {
+      const currentDate = new Date();
+      currentDate.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 30; i++) {
+        const hasLog = sortedLogs.some((log) => {
+          const logDate = new Date(log);
+          logDate.setHours(0, 0, 0, 0);
+          return logDate.getTime() === currentDate.getTime();
+        });
+
+        if (hasLog) {
+          currentStreak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+    }
+
+    const productivityScore = Math.min(100, (thisWeekHours / 40) * 100);
+    const weeklyTrend = thisWeekHours > lastWeekHours ? "up" : "down";
+    const monthlyTrend = thisMonthHours > lastWeekHours * 4 ? "up" : "down";
+
+    setStats({
+      totalHours,
+      thisWeekHours,
+      lastWeekHours,
+      thisMonthHours,
+      overtimeHours,
+      averageDailyHours,
+      totalEntries: logs.length,
+      currentStreak,
+      productivityScore,
+      weeklyTrend,
+      monthlyTrend,
+    });
+  };
+
+  const filteredLogs = useMemo(() => {
     let logs = [...timeLogs];
     const now = new Date();
+
     if (dateFilter === "week") {
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - now.getDay());
@@ -52,130 +152,357 @@ export default function EmployeeTimeLogsPage() {
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       logs = logs.filter((log) => new Date(log.date) >= monthStart);
     }
-    if (search) {
+
+    if (projectFilter !== "all") {
+      logs = logs.filter((log) => log.project?._id === projectFilter);
+    }
+
+    if (searchTerm) {
       logs = logs.filter(
         (log) =>
-          log.notes?.toLowerCase().includes(search.toLowerCase()) ||
-          log.project?.name?.toLowerCase().includes(search.toLowerCase()) ||
-          log.task?.name?.toLowerCase().includes(search.toLowerCase())
+          log.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          log.project?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          log.task?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    return logs;
-  }, [timeLogs, dateFilter, search]);
 
-  return (
-    <EmployeeDashboardLayout>
-      <div className="max-w-7xl mx-auto p-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">My Time Logs</h1>
-          <button
-            onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow"
-          >
-            <PlusIcon className="w-5 h-5" /> Add Time Log
-          </button>
-        </div>
-        {/* Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-3">
-            <ClockIcon className="w-6 h-6 text-blue-600" />
-            <div>
-              <p className="text-xs text-gray-500">This Week</p>
-              <p className="text-lg font-bold text-blue-700">{stats.totalWeek.toFixed(2)}h</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-3">
-            <CalendarIcon className="w-6 h-6 text-gray-600" />
-            <div>
-              <p className="text-xs text-gray-500">This Month</p>
-              <p className="text-lg font-bold text-gray-900">{stats.totalMonth.toFixed(2)}h</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-3">
-            <ClockIcon className="w-6 h-6 text-red-600" />
-            <div>
-              <p className="text-xs text-gray-500">Overtime</p>
-              <p className="text-lg font-bold text-red-600">{stats.overtime.toFixed(2)}h</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-3">
-            <MagnifyingGlassIcon className="w-6 h-6 text-gray-600" />
-            <div>
-              <p className="text-xs text-gray-500">Entries</p>
-              <p className="text-lg font-bold text-gray-900">{stats.entries}</p>
-            </div>
-          </div>
-        </div>
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="relative flex-1 max-w-md">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by notes, project, or task..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <select
-            className="border rounded px-3 py-2 text-sm"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-          >
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="all">All Time</option>
-          </select>
-        </div>
-        {/* Time Log Table */}
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Time Log History</h2>
-          {loading ? (
-            <div className="text-center text-blue-600 py-8">Loading...</div>
-          ) : filtered.length === 0 ? (
-            <div className="text-center text-gray-400 py-8">No time logs found.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-2 text-left">Date</th>
-                    <th className="px-4 py-2 text-left">Time In</th>
-                    <th className="px-4 py-2 text-left">Time Out</th>
-                    <th className="px-4 py-2 text-left">Total Hours</th>
-                    <th className="px-4 py-2 text-left">Overtime</th>
-                    <th className="px-4 py-2 text-left">Project</th>
-                    <th className="px-4 py-2 text-left">Task</th>
-                    <th className="px-4 py-2 text-left">Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((log) => (
-                    <tr key={log._id} className="border-b">
-                      <td className="px-4 py-2">{new Date(log.date).toLocaleDateString()}</td>
-                      <td className="px-4 py-2">{log.timeIn ? new Date(log.timeIn).toLocaleTimeString() : "-"}</td>
-                      <td className="px-4 py-2">{log.timeOut ? new Date(log.timeOut).toLocaleTimeString() : "-"}</td>
-                      <td className="px-4 py-2">{log.totalHours?.toFixed(2) ?? "-"}</td>
-                      <td className="px-4 py-2">
-                        {log.overtimeHours && log.overtimeHours > 0 ? (
-                          <span className="text-red-600 font-semibold">{log.overtimeHours.toFixed(2)}</span>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                      <td className="px-4 py-2">{log.project?.name || "-"}</td>
-                      <td className="px-4 py-2">{log.task?.name || "-"}</td>
-                      <td className="px-4 py-2">{log.notes || "-"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+    return logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [timeLogs, dateFilter, projectFilter, searchTerm]);
+
+  const StatCard = ({
+    title,
+    value,
+    icon,
+    trend,
+    trendValue,
+    color,
+    subtitle,
+  }: {
+    title: string;
+    value: string | number;
+    icon: React.ReactNode;
+    trend?: "up" | "down";
+    trendValue?: string;
+    color: string;
+    subtitle?: string;
+  }) => (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+          {trend && (
+            <div className={`flex items-center mt-2 text-sm ${trend === "up" ? "text-green-600" : "text-red-600"}`}>
+              {trend === "up" ? <ArrowUpIcon className="w-4 h-4 mr-1" /> : <ArrowDownIcon className="w-4 h-4 mr-1" />}
+              {trendValue}
             </div>
           )}
         </div>
-        {/* Add Time Log Modal (coming soon) */}
-        {/* {showAdd && <AddTimeLogModal onClose={() => setShowAdd(false)} onSave={fetchTimeLogs} />} */}
+        <div className={`p-3 rounded-lg ${color} text-white`}>{icon}</div>
+      </div>
+    </div>
+  );
+
+  const TimeLogCard = ({ log }: { log: TimeLogData & { _id: string; project?: Project; task?: Task } }) => {
+    const isOvertime = (log.overtimeHours || 0) > 0;
+    const isToday = new Date(log.date).toDateString() === new Date().toDateString();
+
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200 group">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+              <ClockIcon className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                {new Date(log.date).toLocaleDateString()}
+                {isToday && (
+                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Today</span>
+                )}
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {log.timeIn ? new Date(log.timeIn).toLocaleTimeString() : "No clock in"} -
+                {log.timeOut ? new Date(log.timeOut).toLocaleTimeString() : "No clock out"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <span
+              className={cn(
+                "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border",
+                isOvertime ? "bg-red-100 text-red-700 border-red-200" : "bg-green-100 text-green-700 border-green-200"
+              )}
+            >
+              {isOvertime ? (
+                <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
+              ) : (
+                <CheckIcon className="w-4 h-4 mr-1" />
+              )}
+              {isOvertime ? "Overtime" : "Regular"}
+            </span>
+          </div>
+        </div>
+
+        {/* Time Details */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="flex items-center text-sm text-gray-600">
+            <ClockIcon className="w-4 h-4 mr-2" />
+            <span className="truncate">{(log.totalHours || 0).toFixed(2)} hours</span>
+          </div>
+          {isOvertime && (
+            <div className="flex items-center text-sm text-red-600">
+              <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
+              <span className="truncate">{(log.overtimeHours || 0).toFixed(2)} overtime</span>
+            </div>
+          )}
+        </div>
+
+        {/* Project and Task */}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="flex items-center text-sm text-gray-600">
+            <BriefcaseIcon className="w-4 h-4 mr-2" />
+            <span className="truncate">{log.project?.name || "No Project"}</span>
+          </div>
+          <div className="flex items-center text-sm text-gray-600">
+            <DocumentTextIcon className="w-4 h-4 mr-2" />
+            <span className="truncate">{log.task?.name || "No Task"}</span>
+          </div>
+        </div>
+
+        {/* Notes */}
+        {log.notes && (
+          <div className="mb-4">
+            <p className="text-sm font-medium text-gray-700 mb-2">Notes</p>
+            <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">{log.notes}</p>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="text-xs text-gray-500">Logged: {new Date(log.date).toLocaleDateString()}</div>
+          <div className="flex items-center space-x-2">
+            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+              <PlayIcon className="w-4 h-4 mr-1" />
+              Edit
+            </button>
+            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+              <PauseIcon className="w-4 h-4 mr-1" />
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <EmployeeDashboardLayout>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Time Tracking</h1>
+            <p className="text-gray-600 mt-2">Track your work hours and productivity</p>
+          </div>
+          <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Add Time Log
+          </button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="This Week"
+            value={`${stats.thisWeekHours.toFixed(1)}h`}
+            icon={<ClockIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-blue-500 to-blue-600"
+            subtitle="Weekly total"
+            trend={stats.weeklyTrend}
+            trendValue={`vs ${stats.lastWeekHours.toFixed(1)}h last week`}
+          />
+          <StatCard
+            title="This Month"
+            value={`${stats.thisMonthHours.toFixed(1)}h`}
+            icon={<CalendarDaysIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-green-500 to-green-600"
+            subtitle="Monthly total"
+            trend={stats.monthlyTrend}
+            trendValue={`${stats.thisMonthHours.toFixed(1)}h total`}
+          />
+          <StatCard
+            title="Overtime"
+            value={`${stats.overtimeHours.toFixed(1)}h`}
+            icon={<ExclamationTriangleIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-red-500 to-red-600"
+            subtitle="Extra hours"
+          />
+          <StatCard
+            title="Productivity"
+            value={`${stats.productivityScore.toFixed(0)}%`}
+            icon={<ChartBarIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-purple-500 to-purple-600"
+            subtitle="Weekly efficiency"
+          />
+        </div>
+
+        {/* Additional Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard
+            title="Total Hours"
+            value={`${stats.totalHours.toFixed(1)}h`}
+            icon={<ClockIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-indigo-500 to-indigo-600"
+            subtitle="All time"
+          />
+          <StatCard
+            title="Daily Average"
+            value={`${stats.averageDailyHours.toFixed(1)}h`}
+            icon={<UserIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-orange-500 to-orange-600"
+            subtitle="Per day"
+          />
+          <StatCard
+            title="Current Streak"
+            value={`${stats.currentStreak} days`}
+            icon={<CalendarIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-yellow-500 to-yellow-600"
+            subtitle="Consecutive days"
+          />
+          <StatCard
+            title="Total Entries"
+            value={stats.totalEntries}
+            icon={<DocumentTextIcon className="w-6 h-6" />}
+            color="bg-gradient-to-br from-pink-500 to-pink-600"
+            subtitle="Time log entries"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                Search Time Logs
+              </label>
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  id="search"
+                  placeholder="Search by notes, project, or task..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="dateFilter" className="block text-sm font-medium text-gray-700 mb-2">
+                  Date Range
+                </label>
+                <select
+                  id="dateFilter"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="all">All Time</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="projectFilter" className="block text-sm font-medium text-gray-700 mb-2">
+                  Project
+                </label>
+                <select
+                  id="projectFilter"
+                  value={projectFilter}
+                  onChange={(e) => setProjectFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="all">All Projects</option>
+                  {Array.from(new Set(timeLogs.map((log) => log.project?._id).filter(Boolean))).map((projectId) => {
+                    const project = timeLogs.find((log) => log.project?._id === projectId)?.project;
+                    return (
+                      <option key={projectId} value={projectId}>
+                        {project?.name || "Unknown Project"}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Time Logs Section */}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">Time Log History ({filteredLogs.length})</h2>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setViewMode("grid")}
+                className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  viewMode === "grid" ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "p-2 rounded-lg transition-colors",
+                  viewMode === "list" ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                  <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+                </div>
+              ))}
+            </div>
+          ) : filteredLogs.length === 0 ? (
+            <div className="text-center py-12">
+              <ClockIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No time logs found</h3>
+              <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
+            </div>
+          ) : (
+            <div className={cn("gap-6", viewMode === "grid" ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-4")}>
+              {filteredLogs.map((log) => (
+                <TimeLogCard key={log._id} log={log} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </EmployeeDashboardLayout>
   );

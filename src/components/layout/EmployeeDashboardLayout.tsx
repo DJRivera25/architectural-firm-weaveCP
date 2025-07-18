@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import NotificationBell from "@/components/ui/NotificationBell";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -21,7 +22,6 @@ const navItems = [
   { label: "Dashboard", href: "/employee-dashboard", icon: <HomeIcon className="w-5 h-5 mr-3" /> },
   { label: "Tasks", href: "/employee-dashboard/tasks", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
   { label: "Team", href: "/employee-dashboard/team", icon: <UsersIcon className="w-5 h-5 mr-3" /> },
-  { label: "Kanban Board", href: "/employee-dashboard/tasks/kanban", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
   { label: "Time Logs", href: "/employee-dashboard/timelogs", icon: <ClockIcon className="w-5 h-5 mr-3" /> },
   {
     label: "Leave Management",
@@ -88,6 +88,13 @@ export default function EmployeeDashboardLayout({ children }: { children: ReactN
             Overview
           </div>
           <div className="flex items-center gap-6 relative">
+            <Link
+              href="/"
+              className="inline-flex items-center px-4 py-2 bg-yellow-400 text-blue-900 rounded-lg hover:bg-yellow-500 transition-colors font-semibold text-sm"
+            >
+              <HomeIcon className="w-4 h-4 mr-2" />
+              Homepage
+            </Link>
             <div className="relative">
               <NotificationBell />
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold border-2 border-white">
@@ -133,7 +140,7 @@ export default function EmployeeDashboardLayout({ children }: { children: ReactN
             </div>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto px-10 py-8 animate-fadeInSlow">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 py-8 animate-fadeInSlow">{children}</div>
       </main>
     </div>
   );

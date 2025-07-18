@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import NotificationBell from "@/components/ui/NotificationBell";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -17,15 +18,16 @@ import {
   CalendarDaysIcon,
   CalendarIcon,
   UserCircleIcon,
+  FolderIcon,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: <HomeIcon className="w-5 h-5 mr-3" /> },
   { label: "Content", href: "/dashboard/content", icon: <DocumentTextIcon className="w-5 h-5 mr-3" /> },
+  { label: "Projects", href: "/dashboard/projects", icon: <FolderIcon className="w-5 h-5 mr-3" /> },
   { label: "Team", href: "/dashboard/team", icon: <UsersIcon className="w-5 h-5 mr-3" /> },
   { label: "Jobs", href: "/dashboard/jobs", icon: <BriefcaseIcon className="w-5 h-5 mr-3" /> },
   { label: "Tasks", href: "/dashboard/tasks", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
-  { label: "Kanban Board", href: "/dashboard/tasks/kanban", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
   { label: "Time Tracking", href: "/dashboard/timetracking", icon: <ClockIcon className="w-5 h-5 mr-3" /> },
   { label: "Leave Management", href: "/dashboard/leaves", icon: <CalendarDaysIcon className="w-5 h-5 mr-3" /> },
   { label: "Calendar", href: "/dashboard/calendar", icon: <CalendarIcon className="w-5 h-5 mr-3" /> },
@@ -83,10 +85,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             CMS Dashboard
           </div>
           <div className="flex items-center gap-6">
+            <Link
+              href="/"
+              className="inline-flex items-center px-4 py-2 bg-yellow-400 text-blue-900 rounded-lg hover:bg-yellow-500 transition-colors font-semibold text-sm"
+            >
+              <HomeIcon className="w-4 h-4 mr-2" />
+              Homepage
+            </Link>
             <NotificationBell />
-            <a href="/dashboard/settings" className="hover:bg-blue-100 rounded-full p-2 transition-colors">
+            <Link href="/dashboard/settings" className="hover:bg-blue-100 rounded-full p-2 transition-colors">
               <Cog6ToothIcon className="w-8 h-8 text-blue-800" />
-            </a>
+            </Link>
             {userImage ? (
               <Image
                 src={userImage}
@@ -108,7 +117,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </button>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto px-10 py-8 animate-fadeInSlow">{children}</div>
+        <div className="flex-1 overflow-y-auto px-4 py-8 animate-fadeInSlow">{children}</div>
       </main>
     </div>
   );
