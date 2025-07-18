@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiUser, FiClipboard, FiCode, FiCheckCircle, FiSettings, FiMail } from "react-icons/fi";
-import React from "react"; // Added missing import for React
+import React from "react";
 
 export type ProcessStep = {
   number: string;
@@ -75,7 +75,7 @@ export default function ProcessPreview({
     >
       {/* Decorative background accent */}
       {/* No background accent */}
-      <div className="relative max-w-7xl mx-auto z-10">
+      <div className="relative max-w-7xl mx-auto z-10 px-2">
         <div className="text-center mb-4 mx-auto">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -108,32 +108,28 @@ export default function ProcessPreview({
             whileInView={{ opacity: 1, scaleX: 1 }}
             transition={{ duration: 0.7, delay: 0.1, ease: "easeInOut" }}
             viewport={{ once: true }}
-            className="hidden md:block absolute top-1/2 h-0.5 bg-yellow-500 z-0 origin-left"
-            style={{ left: "60px", right: "60px", zIndex: 1 }}
+            className="hidden md:block absolute top-1/2 h-0.5 bg-yellow-500 z-0 origin-left pointer-events-none"
+            style={{ left: "80px", right: "80px", zIndex: 0 }}
           />
           <div className="hidden md:flex w-full justify-between relative z-10">
             {steps.map((step, idx) => {
               const isOdd = idx % 2 === 0;
               const isFirst = idx === 0;
               const isLast = idx === steps.length - 1;
-              // Card dimensions
               const cardWidth = "400px";
               const cardHeight = "auto";
-              // Card JSX
               const card = (
                 <motion.div
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: idx * 0.12, ease: "easeInOut" }}
                   viewport={{ once: true }}
-                  className="relative border-2 rounded-md shadow bg-blue-50/80 px-6 py-4 mx-auto min-h-[120px] pl-[64px] max-w-full md:max-w-[90vw] w-full md:w-[400px]"
+                  className="relative border-2 rounded-md shadow bg-blue-50/80 px-6 py-4 mx-auto min-h-[120px] pl-[64px] max-w-full md:max-w-[90vw] w-full md:w-[400px] z-20"
                   style={{ height: cardHeight }}
                 >
-                  {/* Icon in blue square, absolutely positioned */}
-                  <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-12 h-12 bg-yellow-400 rounded-md flex items-center justify-center shadow">
+                  <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-12 h-12 bg-yellow-400 rounded-md flex items-center justify-center shadow z-30">
                     {stepIcons[idx % stepIcons.length]}
                   </div>
-                  {/* Card content with left padding for icon */}
                   <div>
                     <div className="font-bold text-lg text-blue-800 mb-1">{step.title}</div>
                     <ul className="text-sm text-blue-900/90 space-y-1">
@@ -144,33 +140,30 @@ export default function ProcessPreview({
                   </div>
                 </motion.div>
               );
-              // Card position logic
               let cardPositionClass = "left-1/2 -translate-x-1/2";
               if (isFirst) cardPositionClass = "right-0 translate-x-1/2";
               if (isLast) cardPositionClass = "left-0 -translate-x-1/2";
               return (
                 <div
                   key={step.number + step.title}
-                  className="relative flex flex-col items-center w-[120px] max-w-full"
+                  className="relative flex flex-col items-center w-[120px] max-w-full z-10"
                 >
-                  {/* Timeline dot and number (desktop) */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0.7 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.6, delay: idx * 0.12 + 0.15, ease: "easeInOut" }}
                     viewport={{ once: true }}
-                    className="w-10 h-10 rounded-full bg-blue-50 border-2 border-gray-900 flex items-center justify-center text-base font-bold text-blue-700 shadow-md mb-2 md:mb-0"
+                    className="w-10 h-10 rounded-full bg-blue-50 border-2 border-gray-900 flex items-center justify-center text-base font-bold text-blue-700 shadow-md mb-2 md:mb-0 z-20"
                   >
                     {step.number}
                   </motion.div>
-                  {/* In the desktop timeline, animate the vertical connector lines above/below the dot */}
                   {isOdd ? (
                     <motion.div
                       initial={{ opacity: 0, scaleY: 0.7 }}
                       whileInView={{ opacity: 1, scaleY: 1 }}
                       transition={{ duration: 0.5, delay: idx * 0.12 + 0.08, ease: "easeInOut" }}
                       viewport={{ once: true }}
-                      className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-0.5 h-[120px] bg-yellow-500 z-5 origin-bottom"
+                      className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-0.5 h-[120px] bg-yellow-500 z-0 origin-bottom pointer-events-none"
                     />
                   ) : (
                     <motion.div
@@ -178,10 +171,9 @@ export default function ProcessPreview({
                       whileInView={{ opacity: 1, scaleY: 1 }}
                       transition={{ duration: 0.5, delay: idx * 0.12 + 0.08, ease: "easeInOut" }}
                       viewport={{ once: true }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-[60px] bg-yellow-500 z-5 origin-top"
+                      className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-[60px] bg-yellow-500 z-0 origin-top pointer-events-none"
                     />
                   )}
-                  {/* Card above timeline for odd, below for even (desktop only) */}
                   {isOdd ? (
                     <div className={`absolute ${cardPositionClass} -top-[200px] z-20`} style={{ maxWidth: "100vw" }}>
                       {card}
@@ -197,70 +189,38 @@ export default function ProcessPreview({
           </div>
           {/* Mobile stacked card with vertical timeline */}
           <div className="md:hidden flex flex-col w-full items-center gap-y-0 relative z-10">
-            {/* Vertical timeline line (mobile) */}
             <motion.div
               initial={{ opacity: 0, scaleY: 0.7 }}
               whileInView={{ opacity: 1, scaleY: 1 }}
-              transition={{ duration: 0.7, delay: 0.1, ease: "easeInOut" }}
+              transition={{ duration: 1.2, delay: steps.length * 0.13, ease: "easeInOut" }}
               viewport={{ once: true }}
-              className="absolute left-1/2 top-0 -translate-x-1/2 w-0.5 h-full bg-blue-200 z-0 origin-top"
+              className="absolute left-1/2 -translate-x-1/2 top-0 w-0.5 h-full bg-yellow-500 z-0 origin-top pointer-events-none"
             />
-            {/* First dot */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.7 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.15, ease: "easeInOut" }}
-              viewport={{ once: true }}
-              className="w-10 h-10 rounded-full bg-blue-50 border-4 border-blue-400 flex items-center justify-center text-base font-bold text-blue-700 shadow-md"
-            >
-              {steps[0].number}
-            </motion.div>
-            {/* First card */}
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0, ease: "easeInOut" }}
-              viewport={{ once: true }}
-              className="w-full flex flex-col items-center relative z-10 py-2"
-            >
-              <div className="flex items-start border-2 border-blue-300 rounded-md shadow bg-blue-50/80 px-4 py-3 min-w-[220px] max-w-full h-auto mx-auto mt-1">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-400 rounded-md flex items-center justify-center mr-3 text-white">
-                  {stepIcons[0]}
-                </div>
-                <div>
-                  <div className="font-bold text-base text-blue-800 mb-1">{steps[0].title}</div>
-                  <ul className="text-xs text-blue-900/90 space-y-1 pl-2">
-                    {steps[0].description.split("\n").map((line, i) => (
-                      <li key={i}>› {line}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </motion.div>
-            {/* For steps 1 to N-1: dot, then card */}
-            {steps.slice(1).map((step, idx) => (
+            {steps.map((step, idx) => (
               <React.Fragment key={step.number + step.title}>
-                {/* Dot between cards */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.7 }}
                   whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: (idx + 1) * 0.12 + 0.15, ease: "easeInOut" }}
+                  transition={{ duration: 0.6, delay: idx * 0.12 + 0.15, ease: "easeInOut" }}
                   viewport={{ once: true }}
-                  className="w-10 h-10 rounded-full bg-blue-50 border-4 border-blue-400 flex items-center justify-center text-base font-bold text-blue-700 shadow-md"
+                  className="w-10 h-10 rounded-full bg-blue-50 border-2 border-black flex items-center justify-center text-base font-bold text-blue-700 shadow-md z-20 mx-auto"
+                  style={{ position: "relative", left: "0" }}
                 >
                   {step.number}
                 </motion.div>
-                {/* Card below the dot */}
                 <motion.div
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: (idx + 1) * 0.12, ease: "easeInOut" }}
+                  transition={{ duration: 0.7, delay: idx * 0.12, ease: "easeInOut" }}
                   viewport={{ once: true }}
                   className="w-full flex flex-col items-center relative z-10 py-2"
                 >
-                  <div className="flex items-start border-2 border-blue-300 rounded-md shadow bg-blue-50/80 px-4 py-3 min-w-[220px] max-w-full h-auto mx-auto mt-1">
-                    <div className="flex-shrink-0 w-10 h-10 bg-blue-400 rounded-md flex items-center justify-center mr-3 text-white">
-                      {stepIcons[idx + 1]}
+                  <div
+                    className="flex items-start border-2 border-black rounded-md shadow bg-blue-50/80 px-4 py-3 min-w-[220px] max-w-full h-auto mx-auto mt-1"
+                    style={{ position: "relative", paddingLeft: 56 }}
+                  >
+                    <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-12 h-12 bg-yellow-400 rounded-md flex items-center justify-center shadow z-30">
+                      {stepIcons[idx % stepIcons.length]}
                     </div>
                     <div>
                       <div className="font-bold text-base text-blue-800 mb-1">{step.title}</div>

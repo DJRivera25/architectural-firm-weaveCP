@@ -38,7 +38,7 @@ function AnimatedBar({ value, label, delay }: { value: number; label: string; de
 
     function animateCount(ts: number) {
       if (!start) start = ts;
-      const progress = Math.min((ts - start) / 5000, 1);
+      const progress = Math.min((ts - start) / 3000, 1);
       const val = Math.floor(progress * value);
       setCount(val);
       if (progress < 1) {
@@ -63,7 +63,7 @@ function AnimatedBar({ value, label, delay }: { value: number; label: string; de
       <motion.div
         initial={{ height: 0, opacity: 0 }}
         whileInView={{ height: `${value * multiplier}px`, opacity: 1 }}
-        transition={{ duration: 5, delay: delay / 1000, ease: "easeInOut" }}
+        transition={{ duration: 3, delay: delay / 1000, ease: "easeInOut" }}
         viewport={{ once: true }}
         className="flex flex-col justify-end items-center w-full"
         style={{ alignSelf: "flex-end" }}
@@ -93,13 +93,13 @@ function AnimatedBar({ value, label, delay }: { value: number; label: string; de
 
 export default function AdvantageSection() {
   return (
-    <section className="py-24 px-4 bg-gradient-to-br from-white via-blue-50 to-blue-100">
+    <section className="py-16 px-4 bg-gradient-to-br from-white via-blue-50 to-blue-100">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 ">
         <div className="flex flex-col gap-8 md:pr-8 h-full justify-between min-h-[400px]">
-          <h2 className="text-5xl md:text-5xl font-extrabold text-left leading-tight text-blue-900">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-center sm:text-left leading-tight text-black">
             What is the <span className="text-blue-600">in-house cost</span> of construction drawings?
           </h2>
-          <div className="text-lg text-blue-700 font-medium text-left max-w-xl self-end">
+          <div className="text-lg text-gray-800 font-medium text-center sm:text-left max-w-xl self-end">
             Weave offers a significant pricing advantage compared to prevailing rates in other continents. Our rates are
             highly competitive, making us an attractive option for cost-conscious clients who operate in any part of the
             world. By choosing Weave, you benefit from top-tier architectural services at a fraction of the cost,

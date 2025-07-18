@@ -22,7 +22,7 @@ export default function AboutPreview({
   image = "/viber_image_2024-08-20_10-50-36-119.jpg",
 }: AboutPreviewProps) {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div
@@ -31,9 +31,9 @@ export default function AboutPreview({
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-6">Who We Are</h2>
-            <p className="text-lg text-gray-600 mb-6">{paragraph1}</p>
-            <p className="text-lg text-gray-600 mb-8">{paragraph2}</p>
+            <h2 className="text-3xl sm:text-5xl text-center sm:text-left font-bold text-gray-900 mb-6">Who We Are</h2>
+            <p className="text-md text-center sm:text text-gray-600 mb-6">{paragraph1}</p>
+            <p className="text-md text-center sm:text text-gray-600 mb-8">{paragraph2}</p>
             <Link
               href={ctaLink}
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 hover:brightness-110 transition-colors duration-300"
