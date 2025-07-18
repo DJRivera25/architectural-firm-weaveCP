@@ -17,8 +17,8 @@ export default function AboutPreview({
   paragraph1 = "Architecture is a challenging field and a complex business. Weave Collaboration Partners was established to make running your company easier, simpler, and more profitable. We handle the mechanical and routine tasks, allowing you to focus on the imaginative, the creative, the functional, and the beautiful.",
   paragraph2 = "Don’t think of it as just outsourcing.Think of it as a seamless extension of your team—a remote resource that delivers high-quality work with the same efficiency and excellence you expect from your own staff.",
   ctaLink = "/about",
-  yearsExperience = 20,
-  projectsCompleted = 500,
+  yearsExperience = 4,
+  projectsCompleted = 50,
   image = "/viber_image_2024-08-20_10-50-36-119.jpg",
 }: AboutPreviewProps) {
   return (
@@ -36,7 +36,7 @@ export default function AboutPreview({
             <p className="text-lg text-gray-600 mb-8">{paragraph2}</p>
             <Link
               href={ctaLink}
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 hover:brightness-110 transition-colors duration-300"
             >
               Learn More About Us
               <svg className="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -65,7 +65,7 @@ export default function AboutPreview({
                 priority
               />
             </div>
-            <div className="absolute -top-4 -left-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
+            <div className="absolute -top-4 -left-4 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white p-4 rounded-lg shadow-lg">
               <div className="text-2xl font-bold">{yearsExperience}+</div>
               <div className="text-sm">Years Experience</div>
             </div>

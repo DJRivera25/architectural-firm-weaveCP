@@ -50,12 +50,12 @@ const defaultSteps: ProcessStep[] = [
 ];
 
 const stepIcons = [
-  <FiUser key="icon-0" size={32} className="text-blue-600" />,
-  <FiClipboard key="icon-1" size={32} className="text-blue-600" />,
-  <FiCode key="icon-2" size={32} className="text-blue-600" />,
-  <FiCheckCircle key="icon-3" size={32} className="text-blue-600" />,
-  <FiSettings key="icon-4" size={32} className="text-blue-600" />,
-  <FiMail key="icon-5" size={32} className="text-blue-600" />,
+  <FiUser key="icon-0" size={32} className="text-black" />,
+  <FiClipboard key="icon-1" size={32} className="text-black" />,
+  <FiCode key="icon-2" size={32} className="text-black" />,
+  <FiCheckCircle key="icon-3" size={32} className="text-black" />,
+  <FiSettings key="icon-4" size={32} className="text-black" />,
+  <FiMail key="icon-5" size={32} className="text-black" />,
 ];
 
 export default function ProcessPreview({
@@ -91,7 +91,7 @@ export default function ProcessPreview({
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeInOut" }}
             viewport={{ once: true }}
-            className="text-xl text-blue-500 max-w-3xl mx-auto"
+            className="text-xl  max-w-3xl mx-auto"
           >
             {intro}
           </motion.p>
@@ -108,7 +108,7 @@ export default function ProcessPreview({
             whileInView={{ opacity: 1, scaleX: 1 }}
             transition={{ duration: 0.7, delay: 0.1, ease: "easeInOut" }}
             viewport={{ once: true }}
-            className="hidden md:block absolute top-1/2 h-0.5 bg-blue-300 z-0 origin-left"
+            className="hidden md:block absolute top-1/2 h-0.5 bg-yellow-500 z-0 origin-left"
             style={{ left: "60px", right: "60px", zIndex: 1 }}
           />
           <div className="hidden md:flex w-full justify-between relative z-10">
@@ -126,11 +126,11 @@ export default function ProcessPreview({
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: idx * 0.12, ease: "easeInOut" }}
                   viewport={{ once: true }}
-                  className="relative border-2 border-blue-300 rounded-md shadow bg-blue-50/80 px-6 py-4 mx-auto min-h-[120px] pl-[64px] max-w-full md:max-w-[90vw] w-full md:w-[400px]"
+                  className="relative border-2 rounded-md shadow bg-blue-50/80 px-6 py-4 mx-auto min-h-[120px] pl-[64px] max-w-full md:max-w-[90vw] w-full md:w-[400px]"
                   style={{ height: cardHeight }}
                 >
                   {/* Icon in blue square, absolutely positioned */}
-                  <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-12 h-12 bg-blue-400 rounded-md flex items-center justify-center shadow">
+                  <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-12 h-12 bg-yellow-400 rounded-md flex items-center justify-center shadow">
                     {stepIcons[idx % stepIcons.length]}
                   </div>
                   {/* Card content with left padding for icon */}
@@ -159,7 +159,7 @@ export default function ProcessPreview({
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.6, delay: idx * 0.12 + 0.15, ease: "easeInOut" }}
                     viewport={{ once: true }}
-                    className="w-10 h-10 rounded-full bg-blue-50 border-4 border-blue-400 flex items-center justify-center text-base font-bold text-blue-700 shadow-md mb-2 md:mb-0"
+                    className="w-10 h-10 rounded-full bg-blue-50 border-2 border-gray-900 flex items-center justify-center text-base font-bold text-blue-700 shadow-md mb-2 md:mb-0"
                   >
                     {step.number}
                   </motion.div>
@@ -170,7 +170,7 @@ export default function ProcessPreview({
                       whileInView={{ opacity: 1, scaleY: 1 }}
                       transition={{ duration: 0.5, delay: idx * 0.12 + 0.08, ease: "easeInOut" }}
                       viewport={{ once: true }}
-                      className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-0.5 h-[200px] bg-blue-200 z-10 origin-bottom"
+                      className="absolute top-[-120px] left-1/2 -translate-x-1/2 w-0.5 h-[120px] bg-yellow-500 z-5 origin-bottom"
                     />
                   ) : (
                     <motion.div
@@ -178,7 +178,7 @@ export default function ProcessPreview({
                       whileInView={{ opacity: 1, scaleY: 1 }}
                       transition={{ duration: 0.5, delay: idx * 0.12 + 0.08, ease: "easeInOut" }}
                       viewport={{ once: true }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-[100px] bg-blue-200 z-10 origin-top"
+                      className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-[60px] bg-yellow-500 z-5 origin-top"
                     />
                   )}
                   {/* Card above timeline for odd, below for even (desktop only) */}

@@ -8,6 +8,8 @@ import ContactCTA, { ContactCTAProps } from "@/components/ui/ContactCTA";
 import ScrollToContactOnLoad from "@/components/ui/ScrollToContactOnLoad";
 import WhyWeave, { WhyWeaveProps } from "@/components/ui/WhyWeave";
 import OurTeam, { OurTeamProps } from "@/components/ui/OurTeam";
+import AdvantageSection from "@/components/ui/AdvantageSection";
+import { motion } from "framer-motion";
 
 async function fetchSection(section: string) {
   try {
@@ -63,6 +65,7 @@ export default async function Home() {
             <ProcessPreview {...(process as ProcessPreviewProps)} />
           </section>
         </Suspense>
+        <AdvantageSection />
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>
           <section aria-labelledby="team-heading">
             <OurTeam {...(team as OurTeamProps)} />

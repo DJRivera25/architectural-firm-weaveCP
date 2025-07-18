@@ -75,7 +75,7 @@ function TeamCard({ member, bio, custom }: { member: TeamMember; bio: string; cu
       </motion.div>
       {/* Overlay: slides up from bottom, covers card, bio at bottom, but never covers name/role */}
       <div className="absolute left-0 bottom-0 w-full h-full pointer-events-none z-20 overflow-hidden">
-        <div className="absolute left-0 bottom-0 w-full h-full bg-gradient-to-b from-[#1a237e]/90 via-[#181c3a]/95 to-[#0a0a23]/95 backdrop-blur-sm rounded-b-2xl group-hover:rounded-2xl transition-transform transition-opacity duration-700 ease-in-out flex flex-col justify-between group-hover:justify-between translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="absolute left-0 bottom-0 w-full h-full bg-gradient-to-b from-blue-900/90 via-blue-800/95 to-indigo-900/95 backdrop-blur-sm rounded-b-2xl group-hover:rounded-2xl transition-transform transition-opacity duration-700 ease-in-out flex flex-col justify-between group-hover:justify-between translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
           {/* Bio text at bottom on hover */}
           <div className="p-5 pb-6 text-white text-xs md:text-sm font-normal opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-300 mt-auto">
             {bio}
@@ -106,14 +106,14 @@ export default function OurTeam({ management = defaultManagement, production = d
         hidden: {},
         visible: { transition: { staggerChildren: 0.13 } },
       }}
-      className="py-16 bg-gradient-to-b from-[#1a237e] via-[#181c3a] to-[#0a0a23]"
+      className="py-16 bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold text-center mb-12 text-white">Our Team</h2>
+        <h2 className="text-5xl font-bold text-center mb-12 text-white">Our Team</h2>
         <div className="mb-16">
           <h3 className="text-2xl font-semibold text-center mb-8 text-blue-100 tracking-wide uppercase">Management</h3>
           <motion.div
-            className="grid grid-cols-2 lg:grid-cols-2 gap-8 justify-items-center m-0"
+            className="flex flex-col md:flex-row justify-center items-center gap-2 m-0"
             variants={{ visible: { transition: { staggerChildren: 0.13 } } }}
           >
             {management.map((member, idx) => (
@@ -131,7 +131,7 @@ export default function OurTeam({ management = defaultManagement, production = d
             Production Team Leads
           </h3>
           <motion.div
-            className="grid grid-cols-2 lg:grid-cols-4 gap-8 m-0 justify-items-center"
+            className="flex flex-col md:flex-row justify-center items-center gap-2 m-0"
             variants={{ visible: { transition: { staggerChildren: 0.13 } } }}
           >
             {production.map((member, idx) => (

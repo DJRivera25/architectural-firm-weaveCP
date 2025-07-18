@@ -91,7 +91,7 @@ export default function PortfolioPreview({
         >
           <Link
             href="/portfolio"
-            className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300"
+            className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-md text-white bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 hover:brightness-110 transition-colors duration-300"
           >
             View All Projects
             <svg className="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

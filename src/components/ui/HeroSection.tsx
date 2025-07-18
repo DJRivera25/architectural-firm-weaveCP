@@ -57,6 +57,17 @@ export default function HeroSection({
 
   return (
     <section className="relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 overflow-hidden px-4 pt-4 sm:pt-4 md:pt-6 h-auto min-h-[60vh] max-h-screen">
+      {/* Weave symbol background image, 3/4 visible on right */}
+      {/* <div className="absolute top-0 right-150 h-full w-full pointer-events-none z-0">
+        <Image
+          src="/weave-symbol-white.png"
+          alt="Weave Symbol Background"
+          fill
+          className="object-contain object-right h-full w-full opacity-100 scale-250"
+          priority={false}
+          draggable={false}
+        />
+      </div> */}
       <div className="relative z-10 text-center text-white px-2 sm:px-4 lg:px-8 max-w-lg sm:max-w-2xl lg:max-w-4xl mx-auto mb-4">
         <motion.p
           initial={{ opacity: 0, y: 30 }}
@@ -68,28 +79,44 @@ export default function HeroSection({
         </motion.p>
       </div>
       <div className="relative w-full max-w-2xl sm:max-w-3xl md:max-w-5xl lg:max-w-7xl xl:max-w-[1200px] mx-auto aspect-[4/3] sm:aspect-[16/6] md:aspect-[16/5] lg:aspect-[16/4] xl:aspect-[16/3] rounded-xl overflow-hidden shadow-2xl min-h-[160px] sm:min-h-[180px] md:min-h-[240px] lg:min-h-[350px] xl:min-h-[500px] max-h-[50vh] mb-2">
-        <Image
-          src={beforeImage}
-          alt="Before: Site Plan"
-          fill
-          className="absolute inset-0 w-full h-full object-cover object-center select-none"
-          draggable={false}
-          priority
-          sizes="(max-width: 640px) 90vw, (max-width: 1024px) 90vw, 1600px"
-        />
-        <Image
-          src={afterImage}
-          alt="After: Rendered View"
-          fill
-          className="absolute inset-0 w-full h-full object-cover object-center select-none"
+        <motion.div
+          initial={{ opacity: 0, scale: 1.08 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, ease: "easeInOut" }}
+          viewport={{ once: true }}
+          className="absolute inset-0 w-full h-full"
+        >
+          <Image
+            src={beforeImage}
+            alt="Before: Site Plan"
+            fill
+            className="absolute inset-0 w-full h-full object-cover object-center select-none"
+            draggable={false}
+            priority
+            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 90vw, 1600px"
+          />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, scale: 1.08 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2, ease: "easeInOut" }}
+          viewport={{ once: true }}
+          className="absolute inset-0 w-full h-full"
           style={{
             clipPath: `inset(0 0 0 ${(1 - reveal) * 100}%)`,
             WebkitClipPath: `inset(0 0 0 ${(1 - reveal) * 100}%)`,
           }}
-          draggable={false}
-          priority
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1600px"
-        />
+        >
+          <Image
+            src={afterImage}
+            alt="After: Rendered View"
+            fill
+            className="absolute inset-0 w-full h-full object-cover object-center select-none"
+            draggable={false}
+            priority
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1600px"
+          />
+        </motion.div>
       </div>
       <motion.div
         initial={{ opacity: 0, y: 30 }}

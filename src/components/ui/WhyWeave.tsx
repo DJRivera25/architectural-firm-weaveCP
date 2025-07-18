@@ -37,7 +37,7 @@ export type WhyWeaveProps = {
 
 export default function WhyWeave({ heading = "Why Weave?", cards = defaultCards }: WhyWeaveProps) {
   return (
-    <section className="py-16 bg-white">
+    <section className="py-16 bg-gradient-to-br from-white via-blue-50 to-blue-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
