@@ -20,6 +20,8 @@ import {
   ChartBarIcon,
   CalendarIcon,
 } from "@heroicons/react/24/outline";
+import { AnimatePresence, motion } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 interface TimeLogStats {
   totalHours: number;
@@ -313,72 +315,94 @@ export default function EmployeeTimeLogsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="This Week"
-            value={`${stats.thisWeekHours.toFixed(1)}h`}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle="Weekly total"
-            trend={stats.weeklyTrend}
-            trendValue={`vs ${stats.lastWeekHours.toFixed(1)}h last week`}
-          />
-          <StatCard
-            title="This Month"
-            value={`${stats.thisMonthHours.toFixed(1)}h`}
-            icon={<CalendarDaysIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle="Monthly total"
-            trend={stats.monthlyTrend}
-            trendValue={`${stats.thisMonthHours.toFixed(1)}h total`}
-          />
-          <StatCard
-            title="Overtime"
-            value={`${stats.overtimeHours.toFixed(1)}h`}
-            icon={<ExclamationTriangleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-red-500 to-red-600"
-            subtitle="Extra hours"
-          />
-          <StatCard
-            title="Productivity"
-            value={`${stats.productivityScore.toFixed(0)}%`}
-            icon={<ChartBarIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            subtitle="Weekly efficiency"
-          />
-        </div>
-
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Hours"
-            value={`${stats.totalHours.toFixed(1)}h`}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-indigo-500 to-indigo-600"
-            subtitle="All time"
-          />
-          <StatCard
-            title="Daily Average"
-            value={`${stats.averageDailyHours.toFixed(1)}h`}
-            icon={<UserIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="Per day"
-          />
-          <StatCard
-            title="Current Streak"
-            value={`${stats.currentStreak} days`}
-            icon={<CalendarIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-yellow-500 to-yellow-600"
-            subtitle="Consecutive days"
-          />
-          <StatCard
-            title="Total Entries"
-            value={stats.totalEntries}
-            icon={<DocumentTextIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-pink-500 to-pink-600"
-            subtitle="Time log entries"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="This Week"
+                  value={`${stats.thisWeekHours.toFixed(1)}h`}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  subtitle="Weekly total"
+                  trend={stats.weeklyTrend}
+                  trendValue={`vs ${stats.lastWeekHours.toFixed(1)}h last week`}
+                />
+                <StatCard
+                  title="This Month"
+                  value={`${stats.thisMonthHours.toFixed(1)}h`}
+                  icon={<CalendarDaysIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  subtitle="Monthly total"
+                  trend={stats.monthlyTrend}
+                  trendValue={`${stats.thisMonthHours.toFixed(1)}h total`}
+                />
+                <StatCard
+                  title="Overtime"
+                  value={`${stats.overtimeHours.toFixed(1)}h`}
+                  icon={<ExclamationTriangleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-red-500 to-red-600"
+                  subtitle="Extra hours"
+                />
+                <StatCard
+                  title="Productivity"
+                  value={`${stats.productivityScore.toFixed(0)}%`}
+                  icon={<ChartBarIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-purple-500 to-purple-600"
+                  subtitle="Weekly efficiency"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                <StatCard
+                  title="Total Hours"
+                  value={`${stats.totalHours.toFixed(1)}h`}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-indigo-500 to-indigo-600"
+                  subtitle="All time"
+                />
+                <StatCard
+                  title="Daily Average"
+                  value={`${stats.averageDailyHours.toFixed(1)}h`}
+                  icon={<UserIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-orange-500 to-orange-600"
+                  subtitle="Per day"
+                />
+                <StatCard
+                  title="Current Streak"
+                  value={`${stats.currentStreak} days`}
+                  icon={<CalendarIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-yellow-500 to-yellow-600"
+                  subtitle="Consecutive days"
+                />
+                <StatCard
+                  title="Total Entries"
+                  value={stats.totalEntries}
+                  icon={<DocumentTextIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-pink-500 to-pink-600"
+                  subtitle="Time log entries"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

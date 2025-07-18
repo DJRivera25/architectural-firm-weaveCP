@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/Button";
 import { useSession } from "next-auth/react";
 import { requestPasswordReset, resetPassword } from "@/utils/api";
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("system");
@@ -50,6 +52,16 @@ export default function SettingsPage() {
   const [resendMessage, setResendMessage] = useState("");
   const [resendError, setResendError] = useState("");
   const [resendCountdown, setResendCountdown] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [settingsData, setSettingsData] = useState(null);
+
+  useEffect(() => {
+    // Simulate fetch
+    setTimeout(() => {
+      setSettingsData(null);
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -214,7 +226,24 @@ export default function SettingsPage() {
               })}
             </nav>
           </div>
-          <div className="p-6">{renderTabContent()}</div>
+          <div className="p-6">
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <LoadingSkeleton height={200} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="content"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                >
+                  {renderTabContent()}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </DashboardLayout>

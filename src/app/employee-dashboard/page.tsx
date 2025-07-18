@@ -19,6 +19,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { getTasks, getTimeLogs, getLeaves } from "@/utils/api";
 import { Task, TimeLogData, LeaveWithUser } from "@/types";
+import { AnimatePresence, motion } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 interface EmployeeStats {
   totalTasks: number;
@@ -376,72 +378,94 @@ export default function EmployeeDashboardPage() {
         </div>
 
         {/* Main Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Tasks"
-            value={stats.totalTasks}
-            icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle={`${stats.completedTasks} completed`}
-          />
-          <StatCard
-            title="Task Completion"
-            value={`${stats.taskCompletionRate.toFixed(1)}%`}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle="Completion rate"
-            trend={stats.taskCompletionRate > 70 ? "up" : "down"}
-            trendValue={`${stats.taskCompletionRate.toFixed(1)}%`}
-          />
-          <StatCard
-            title="This Week Hours"
-            value={`${stats.thisWeekHours.toFixed(1)}h`}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="Weekly total"
-            trend={stats.thisWeekHours > stats.lastWeekHours ? "up" : "down"}
-            trendValue={`vs ${stats.lastWeekHours.toFixed(1)}h last week`}
-          />
-          <StatCard
-            title="Productivity Score"
-            value={`${stats.productivityScore.toFixed(0)}%`}
-            icon={<ChartBarIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            subtitle="Overall performance"
-          />
-        </div>
-
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Current Streak"
-            value={`${stats.currentStreak} days`}
-            icon={<CalendarDaysIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-red-500 to-red-600"
-            subtitle="Consecutive work days"
-          />
-          <StatCard
-            title="Monthly Hours"
-            value={`${stats.monthlyHours.toFixed(1)}h`}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-indigo-500 to-indigo-600"
-            subtitle="This month"
-          />
-          <StatCard
-            title="Overtime Hours"
-            value={`${stats.overtimeHours.toFixed(1)}h`}
-            icon={<ExclamationTriangleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-yellow-500 to-yellow-600"
-            subtitle="Extra hours worked"
-          />
-          <StatCard
-            title="Upcoming Deadlines"
-            value={stats.upcomingDeadlines}
-            icon={<CalendarIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-pink-500 to-pink-600"
-            subtitle="Due this week"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Tasks"
+                  value={stats.totalTasks}
+                  icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  subtitle={`${stats.completedTasks} completed`}
+                />
+                <StatCard
+                  title="Task Completion"
+                  value={`${stats.taskCompletionRate.toFixed(1)}%`}
+                  icon={<CheckCircleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  subtitle="Completion rate"
+                  trend={stats.taskCompletionRate > 70 ? "up" : "down"}
+                  trendValue={`${stats.taskCompletionRate.toFixed(1)}%`}
+                />
+                <StatCard
+                  title="This Week Hours"
+                  value={`${stats.thisWeekHours.toFixed(1)}h`}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-orange-500 to-orange-600"
+                  subtitle="Weekly total"
+                  trend={stats.thisWeekHours > stats.lastWeekHours ? "up" : "down"}
+                  trendValue={`vs ${stats.lastWeekHours.toFixed(1)}h last week`}
+                />
+                <StatCard
+                  title="Productivity Score"
+                  value={`${stats.productivityScore.toFixed(0)}%`}
+                  icon={<ChartBarIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-purple-500 to-purple-600"
+                  subtitle="Overall performance"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+                <StatCard
+                  title="Current Streak"
+                  value={`${stats.currentStreak} days`}
+                  icon={<CalendarDaysIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-red-500 to-red-600"
+                  subtitle="Consecutive work days"
+                />
+                <StatCard
+                  title="Monthly Hours"
+                  value={`${stats.monthlyHours.toFixed(1)}h`}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-indigo-500 to-indigo-600"
+                  subtitle="This month"
+                />
+                <StatCard
+                  title="Overtime Hours"
+                  value={`${stats.overtimeHours.toFixed(1)}h`}
+                  icon={<ExclamationTriangleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-yellow-500 to-yellow-600"
+                  subtitle="Extra hours worked"
+                />
+                <StatCard
+                  title="Upcoming Deadlines"
+                  value={stats.upcomingDeadlines}
+                  icon={<CalendarIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-pink-500 to-pink-600"
+                  subtitle="Due this week"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Quick Actions */}
         <div className="space-y-6">

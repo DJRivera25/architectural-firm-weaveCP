@@ -16,6 +16,8 @@ import {
 import { getTasks, getTimeLogs, getLeaves, getUsers } from "@/utils/api";
 import { useState, useEffect } from "react";
 import { Task, TimeLogData, LeaveWithUser } from "@/types";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 // Add RecentActivity type
 interface RecentActivity {
@@ -245,93 +247,113 @@ export default function DashboardPage() {
     },
   ];
 
-  if (isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="space-y-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Welcome back, {session?.user?.name}!</h1>
-              <p className="text-blue-100 mt-2">Here&apos;s what&apos;s happening in your organization today</p>
-            </div>
-            <div className="hidden md:block">
-              <div className="text-right">
-                <p className="text-blue-100 text-sm">Current Time</p>
-                <p className="text-2xl font-bold">{new Date().toLocaleTimeString()}</p>
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <LoadingSkeleton height={200} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            {/* Welcome Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-8 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold">Welcome back, {session?.user?.name}!</h1>
+                  <p className="text-blue-100 mt-2">Here&apos;s what&apos;s happening in your organization today</p>
+                </div>
+                <div className="hidden md:block">
+                  <div className="text-right">
+                    <p className="text-blue-100 text-sm">Current Time</p>
+                    <p className="text-2xl font-bold">{new Date().toLocaleTimeString()}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Main Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Tasks"
-            value={stats.totalTasks}
-            icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle={`${stats.completedTasks} completed`}
-          />
-          <StatCard
-            title="Task Completion"
-            value={`${stats.taskCompletionRate.toFixed(1)}%`}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle="Completion rate"
-          />
-          <StatCard
-            title="Total Employees"
-            value={stats.totalEmployees}
-            icon={<UserIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="All employees"
-          />
-          <StatCard
-            title="Pending Leaves"
-            value={stats.pendingLeaves}
-            icon={<CalendarDaysIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            subtitle="Awaiting approval"
-          />
-        </div>
+            {/* Main Stats */}
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[...Array(4)].map((_, i) => (
+                      <LoadingSkeleton key={i} height={120} />
+                    ))}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="stats"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <StatCard
+                      title="Total Tasks"
+                      value={stats.totalTasks}
+                      icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
+                      color="bg-gradient-to-br from-blue-500 to-blue-600"
+                      subtitle={`${stats.completedTasks} completed`}
+                    />
+                    <StatCard
+                      title="Task Completion"
+                      value={`${stats.taskCompletionRate.toFixed(1)}%`}
+                      icon={<CheckCircleIcon className="w-6 h-6" />}
+                      color="bg-gradient-to-br from-green-500 to-green-600"
+                      subtitle="Completion rate"
+                    />
+                    <StatCard
+                      title="Total Employees"
+                      value={stats.totalEmployees}
+                      icon={<UserIcon className="w-6 h-6" />}
+                      color="bg-gradient-to-br from-orange-500 to-orange-600"
+                      subtitle="All employees"
+                    />
+                    <StatCard
+                      title="Pending Leaves"
+                      value={stats.pendingLeaves}
+                      icon={<CalendarDaysIcon className="w-6 h-6" />}
+                      color="bg-gradient-to-br from-purple-500 to-purple-600"
+                      subtitle="Awaiting approval"
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-        {/* Quick Actions */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {quickActions.map((action) => (
-              <a key={action.title} href={action.href}>
-                <QuickActionCard action={action} />
-              </a>
-            ))}
-          </div>
-        </div>
+            {/* Quick Actions */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {quickActions.map((action) => (
+                  <a key={action.title} href={action.href}>
+                    <QuickActionCard action={action} />
+                  </a>
+                ))}
+              </div>
+            </div>
 
-        {/* Recent Activity */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-          <div className="space-y-4">
-            {recentActivities.length === 0 ? (
-              <div className="text-gray-500 text-center py-8">No recent activity found.</div>
-            ) : (
-              recentActivities.map((activity) => <ActivityItem key={activity.id} activity={activity} />)
-            )}
-          </div>
-        </div>
-      </div>
+            {/* Recent Activity */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+              <div className="space-y-4">
+                {recentActivities.length === 0 ? (
+                  <div className="text-gray-500 text-center py-8">No recent activity found.</div>
+                ) : (
+                  recentActivities.map((activity) => <ActivityItem key={activity.id} activity={activity} />)
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 }

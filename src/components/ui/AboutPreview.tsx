@@ -10,6 +10,7 @@ export type AboutPreviewProps = {
   ctaLink?: string;
   yearsExperience?: number | string;
   projectsCompleted?: number | string;
+  image?: string;
 };
 
 export default function AboutPreview({
@@ -18,6 +19,7 @@ export default function AboutPreview({
   ctaLink = "/about",
   yearsExperience = 20,
   projectsCompleted = 500,
+  image = "/viber_image_2024-08-20_10-50-36-119.jpg",
 }: AboutPreviewProps) {
   return (
     <section className="py-20 bg-white">
@@ -29,7 +31,7 @@ export default function AboutPreview({
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">About Us</h2>
+            <h2 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-6">Who We Are</h2>
             <p className="text-lg text-gray-600 mb-6">{paragraph1}</p>
             <p className="text-lg text-gray-600 mb-8">{paragraph2}</p>
             <Link
@@ -53,17 +55,15 @@ export default function AboutPreview({
             viewport={{ once: true }}
             className="relative"
           >
-            <div className="bg-gray-200 rounded-lg h-96 flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <svg className="w-24 h-24 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="text-lg font-medium">Architectural Excellence</p>
-              </div>
+            <div className="bg-gray-200 rounded-lg h-96 flex items-center justify-center overflow-hidden relative">
+              <Image
+                src={image}
+                alt="Architectural Excellence"
+                fill
+                className="object-cover rounded-lg"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                priority
+              />
             </div>
             <div className="absolute -top-4 -left-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg">
               <div className="text-2xl font-bold">{yearsExperience}+</div>

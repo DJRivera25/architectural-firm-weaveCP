@@ -8,7 +8,6 @@ import {
   ClipboardDocumentListIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
@@ -21,13 +20,14 @@ import {
   ArrowDownIcon,
   BriefcaseIcon,
   CheckIcon,
-  XMarkIcon,
   PauseIcon,
   PlayIcon,
 } from "@heroicons/react/24/outline";
 import { getTasks, getUsers, getProjects } from "@/utils/api";
 import { Task, User, Project } from "@/types";
 import { Button } from "@/components/ui/Button";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 interface TaskStats {
   totalTasks: number;
@@ -363,56 +363,78 @@ export default function TasksPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Tasks"
-            value={stats.totalTasks}
-            icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle="All tasks"
-          />
-          <StatCard
-            title="Completed"
-            value={stats.completedTasks}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle={`${stats.completionRate.toFixed(1)}% completion rate`}
-            trend={stats.completionRate > 50 ? "up" : "down"}
-            trendValue={`${stats.completionRate.toFixed(1)}%`}
-          />
-          <StatCard
-            title="In Progress"
-            value={stats.inProgressTasks}
-            icon={<PlayIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="Active tasks"
-          />
-          <StatCard
-            title="Overdue"
-            value={stats.overdueTasks}
-            icon={<ExclamationTriangleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-red-500 to-red-600"
-            subtitle="Past due date"
-          />
-        </div>
-
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StatCard
-            title="Due Today"
-            value={stats.tasksDueToday}
-            icon={<CalendarDaysIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-yellow-500 to-yellow-600"
-            subtitle="Tasks due today"
-          />
-          <StatCard
-            title="Due This Week"
-            value={stats.tasksDueThisWeek}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-indigo-500 to-indigo-600"
-            subtitle="Tasks due in 7 days"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                {[...Array(2)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Tasks"
+                  value={stats.totalTasks}
+                  icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  subtitle="All tasks"
+                />
+                <StatCard
+                  title="Completed"
+                  value={stats.completedTasks}
+                  icon={<CheckCircleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  subtitle={`${stats.completionRate.toFixed(1)}% completion rate`}
+                  trend={stats.completionRate > 50 ? "up" : "down"}
+                  trendValue={`${stats.completionRate.toFixed(1)}%`}
+                />
+                <StatCard
+                  title="In Progress"
+                  value={stats.inProgressTasks}
+                  icon={<PlayIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-orange-500 to-orange-600"
+                  subtitle="Active tasks"
+                />
+                <StatCard
+                  title="Overdue"
+                  value={stats.overdueTasks}
+                  icon={<ExclamationTriangleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-red-500 to-red-600"
+                  subtitle="Past due date"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <StatCard
+                  title="Due Today"
+                  value={stats.tasksDueToday}
+                  icon={<CalendarDaysIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-yellow-500 to-yellow-600"
+                  subtitle="Tasks due today"
+                />
+                <StatCard
+                  title="Due This Week"
+                  value={stats.tasksDueThisWeek}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-indigo-500 to-indigo-600"
+                  subtitle="Tasks due in 7 days"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -527,34 +549,39 @@ export default function TasksPage() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                  <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <LoadingSkeleton height={200} />
+              </motion.div>
+            ) : filteredTasks.length === 0 ? (
+              <motion.div
+                key="no-tasks"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className="text-center py-12">
+                  <ClipboardDocumentListIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
+                  <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
                 </div>
-              ))}
-            </div>
-          ) : filteredTasks.length === 0 ? (
-            <div className="text-center py-12">
-              <ClipboardDocumentListIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-            </div>
-          ) : (
-            <div className={cn("gap-6", viewMode === "grid" ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-4")}>
-              {filteredTasks.map((task) => (
-                <TaskCard key={task._id} task={task} />
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="tasks"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className={cn("gap-6", viewMode === "grid" ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-4")}>
+                  {filteredTasks.map((task) => (
+                    <TaskCard key={task._id} task={task} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </DashboardLayout>

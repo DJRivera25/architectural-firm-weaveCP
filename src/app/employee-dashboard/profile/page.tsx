@@ -20,6 +20,8 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import type { IUser } from "@/models/User";
+import { AnimatePresence, motion } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -136,57 +138,80 @@ export default function EmployeeProfilePage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <UserIcon className="w-6 h-6 text-blue-600" />
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+              <LoadingSkeleton />
+            </motion.div>
+          ) : (
+            <motion.div
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <UserIcon className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Role</p>
+                    <p className="text-lg font-semibold text-gray-900 capitalize">{userData?.role || "Employee"}</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Role</p>
-                <p className="text-lg font-semibold text-gray-900 capitalize">{userData?.role || "Employee"}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <BuildingOfficeIcon className="w-6 h-6 text-green-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <BuildingOfficeIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Team</p>
+                    <p className="text-lg font-semibold text-gray-900 capitalize">{userData?.team || "Not Assigned"}</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Team</p>
-                <p className="text-lg font-semibold text-gray-900 capitalize">{userData?.team || "Not Assigned"}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <CalendarIcon className="w-6 h-6 text-purple-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <CalendarIcon className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Member Since</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Member Since</p>
-                <p className="text-lg font-semibold text-gray-900">
-                  {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}
-                </p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <ShieldCheckIcon className="w-6 h-6 text-yellow-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <ShieldCheckIcon className="w-6 h-6 text-yellow-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Status</p>
+                    <p className="text-lg font-semibold text-gray-900">Active</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Status</p>
-                <p className="text-lg font-semibold text-gray-900">Active</p>
-              </div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

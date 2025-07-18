@@ -6,7 +6,6 @@ import {
   FolderIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   EyeIcon,
   PencilIcon,
   TrashIcon,
@@ -20,6 +19,8 @@ import {
   CurrencyDollarIcon,
   BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 interface Project {
   _id: string;
@@ -330,42 +331,61 @@ export default function ProjectsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Projects"
-            value={stats.totalProjects}
-            icon={<FolderIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle="All projects"
-          />
-          <StatCard
-            title="Active Projects"
-            value={stats.activeProjects}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle={`${
-              stats.activeProjects > 0 ? ((stats.activeProjects / stats.totalProjects) * 100).toFixed(1) : 0
-            }% of total`}
-            trend={stats.activeProjects > 0 ? "up" : "down"}
-            trendValue={`${stats.activeProjects} active`}
-          />
-          <StatCard
-            title="Total Budget"
-            value={`$${stats.totalBudget.toLocaleString()}`}
-            icon={<CurrencyDollarIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            subtitle="Combined budget"
-          />
-          <StatCard
-            title="Average Progress"
-            value={`${stats.averageProgress.toFixed(1)}%`}
-            icon={<ArrowUpIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="Overall completion"
-            trend={stats.averageProgress > 50 ? "up" : "down"}
-            trendValue={`${stats.averageProgress.toFixed(1)}%`}
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Projects"
+                  value={stats.totalProjects}
+                  icon={<FolderIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  subtitle="All projects"
+                />
+                <StatCard
+                  title="Active Projects"
+                  value={stats.activeProjects}
+                  icon={<CheckCircleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  subtitle={`${
+                    stats.activeProjects > 0 ? ((stats.activeProjects / stats.totalProjects) * 100).toFixed(1) : 0
+                  }% of total`}
+                  trend={stats.activeProjects > 0 ? "up" : "down"}
+                  trendValue={`${stats.activeProjects} active`}
+                />
+                <StatCard
+                  title="Total Budget"
+                  value={`$${stats.totalBudget.toLocaleString()}`}
+                  icon={<CurrencyDollarIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-purple-500 to-purple-600"
+                  subtitle="Combined budget"
+                />
+                <StatCard
+                  title="Average Progress"
+                  value={`${stats.averageProgress.toFixed(1)}%`}
+                  icon={<ArrowUpIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-orange-500 to-orange-600"
+                  subtitle="Overall completion"
+                  trend={stats.averageProgress > 50 ? "up" : "down"}
+                  trendValue={`${stats.averageProgress.toFixed(1)}%`}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -431,38 +451,41 @@ export default function ProjectsPage() {
             <div className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</div>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                  <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-gray-200 rounded"></div>
-                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-                  </div>
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="loading">
+                <LoadingSkeleton height={200} />
+              </motion.div>
+            ) : filteredProjects.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                key="no-projects"
+              >
+                <div className="text-center py-12">
+                  <FolderIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+                  <p className="text-gray-500">
+                    Try adjusting your search or filter criteria, or create a new project.
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : filteredProjects.length === 0 ? (
-            <div className="text-center py-12">
-              <FolderIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria, or create a new project.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredProjects.map((project) => (
-                <ProjectCard key={project._id} project={project} />
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                key="projects"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {filteredProjects.map((project) => (
+                    <ProjectCard key={project._id} project={project} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </DashboardLayout>

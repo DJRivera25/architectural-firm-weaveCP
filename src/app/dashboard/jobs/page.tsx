@@ -22,6 +22,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { getJobs, createJob, updateJob, deleteJob } from "@/utils/api";
 import { JobData } from "@/types";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 interface JobStats {
   totalJobs: number;
@@ -328,38 +330,57 @@ export default function JobPostingsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Jobs"
-            value={stats.totalJobs}
-            icon={<BriefcaseIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle="All job postings"
-          />
-          <StatCard
-            title="Active Jobs"
-            value={stats.activeJobs}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle="Currently accepting applications"
-            trend={stats.activeJobs > stats.totalJobs / 2 ? "up" : "down"}
-            trendValue={`${stats.activeJobs} active`}
-          />
-          <StatCard
-            title="Recent Jobs"
-            value={stats.recentJobs}
-            icon={<CalendarDaysIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="Posted in last 30 days"
-          />
-          <StatCard
-            title="Avg Salary"
-            value={`$${stats.averageSalary.toLocaleString()}`}
-            icon={<CurrencyDollarIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            subtitle="Average annual salary"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Jobs"
+                  value={stats.totalJobs}
+                  icon={<BriefcaseIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  subtitle="All job postings"
+                />
+                <StatCard
+                  title="Active Jobs"
+                  value={stats.activeJobs}
+                  icon={<CheckCircleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  subtitle="Currently accepting applications"
+                  trend={stats.activeJobs > stats.totalJobs / 2 ? "up" : "down"}
+                  trendValue={`${stats.activeJobs} active`}
+                />
+                <StatCard
+                  title="Recent Jobs"
+                  value={stats.recentJobs}
+                  icon={<CalendarDaysIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-orange-500 to-orange-600"
+                  subtitle="Posted in last 30 days"
+                />
+                <StatCard
+                  title="Avg Salary"
+                  value={`$${stats.averageSalary.toLocaleString()}`}
+                  icon={<CurrencyDollarIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-purple-500 to-purple-600"
+                  subtitle="Average annual salary"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Job Type Distribution */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -490,34 +511,39 @@ export default function JobPostingsPage() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
-                  <div className="flex items-center space-x-3 mb-4">
-                    <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                  <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <LoadingSkeleton height={200} />
+              </motion.div>
+            ) : filteredJobs.length === 0 ? (
+              <motion.div
+                key="no-jobs"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className="text-center py-12">
+                  <BriefcaseIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
+                  <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
                 </div>
-              ))}
-            </div>
-          ) : filteredJobs.length === 0 ? (
-            <div className="text-center py-12">
-              <BriefcaseIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-            </div>
-          ) : (
-            <div className={cn("gap-6", viewMode === "grid" ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-4")}>
-              {filteredJobs.map((job) => (
-                <JobCard key={job._id} job={job} />
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="jobs"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className={cn("gap-6", viewMode === "grid" ? "grid grid-cols-1 lg:grid-cols-2" : "space-y-4")}>
+                  {filteredJobs.map((job) => (
+                    <JobCard key={job._id} job={job} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </DashboardLayout>

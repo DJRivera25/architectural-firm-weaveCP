@@ -23,6 +23,8 @@ import { getTeams, getUsers } from "@/utils/api";
 import mongoose, { Types } from "mongoose";
 import { IUser } from "@/models/User";
 import { ITeam } from "@/models/Team";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 // Define plain frontend types for Team and User
 interface Team {
@@ -382,38 +384,57 @@ export default function TeamManager() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Teams"
-            value={stats.totalTeams}
-            icon={<UserGroupIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            subtitle="Active teams"
-          />
-          <StatCard
-            title="Total Members"
-            value={stats.totalMembers}
-            icon={<UserIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle={`${stats.activeMembers} active`}
-            trend={stats.activeMembers > stats.totalMembers / 2 ? "up" : "down"}
-            trendValue={`${stats.activeMembers} active`}
-          />
-          <StatCard
-            title="Average Team Size"
-            value={stats.averageTeamSize.toFixed(1)}
-            icon={<UserGroupIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle="Members per team"
-          />
-          <StatCard
-            title="Managers"
-            value={stats.managersCount}
-            icon={<BriefcaseIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="Team leaders"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Teams"
+                  value={stats.totalTeams}
+                  icon={<UserGroupIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-purple-500 to-purple-600"
+                  subtitle="Active teams"
+                />
+                <StatCard
+                  title="Total Members"
+                  value={stats.totalMembers}
+                  icon={<UserIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  subtitle={`${stats.activeMembers} active`}
+                  trend={stats.activeMembers > stats.totalMembers / 2 ? "up" : "down"}
+                  trendValue={`${stats.activeMembers} active`}
+                />
+                <StatCard
+                  title="Average Team Size"
+                  value={stats.averageTeamSize.toFixed(1)}
+                  icon={<UserGroupIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  subtitle="Members per team"
+                />
+                <StatCard
+                  title="Managers"
+                  value={stats.managersCount}
+                  icon={<BriefcaseIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-orange-500 to-orange-600"
+                  subtitle="Team leaders"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -460,34 +481,39 @@ export default function TeamManager() {
             <div className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</div>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                  <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <LoadingSkeleton height={200} />
+              </motion.div>
+            ) : filteredTeams.length === 0 ? (
+              <motion.div
+                key="no-teams"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className="text-center py-12">
+                  <UserGroupIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No teams found</h3>
+                  <p className="text-gray-500">Try adjusting your search criteria or create a new team.</p>
                 </div>
-              ))}
-            </div>
-          ) : filteredTeams.length === 0 ? (
-            <div className="text-center py-12">
-              <UserGroupIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No teams found</h3>
-              <p className="text-gray-500">Try adjusting your search criteria or create a new team.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredTeams.map((team) => (
-                <TeamCard key={team._id} team={team} />
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="teams"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {filteredTeams.map((team) => (
+                    <TeamCard key={team._id} team={team} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Team Members Section */}
@@ -496,34 +522,39 @@ export default function TeamManager() {
             <h2 className="text-xl font-semibold text-gray-900">Team Members ({filteredUsers.length})</h2>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                  <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div key="loading-users" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <LoadingSkeleton height={200} />
+              </motion.div>
+            ) : filteredUsers.length === 0 ? (
+              <motion.div
+                key="no-users"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className="text-center py-12">
+                  <UserIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No members found</h3>
+                  <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
                 </div>
-              ))}
-            </div>
-          ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-12">
-              <UserIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No members found</h3>
-              <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredUsers.map((user) => (
-                <UserCard key={user._id} user={user} />
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="users"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {filteredUsers.map((user) => (
+                    <UserCard key={user._id} user={user} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </DashboardLayout>

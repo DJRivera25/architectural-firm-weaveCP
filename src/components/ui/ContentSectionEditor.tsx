@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiLayers,
-  FiUser,
   FiGrid,
   FiUsers,
   FiBook,
@@ -19,7 +18,6 @@ import {
   FiMail,
   FiLink,
   FiStar,
-  FiX,
   FiArrowLeft,
 } from "react-icons/fi";
 import dynamic from "next/dynamic";

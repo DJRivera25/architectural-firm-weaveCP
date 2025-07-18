@@ -18,6 +18,8 @@ import {
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 interface LeaveStats {
   totalLeaves: number;
@@ -330,36 +332,55 @@ export default function EmployeeLeavesPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Total Leaves"
-            value={stats.totalLeaves}
-            icon={<UserIcon className="w-6 h-6" />}
-            color="bg-gray-100 text-gray-600"
-            subtitle="Total leave requests"
-          />
-          <StatCard
-            title="Pending Leaves"
-            value={stats.pendingLeaves}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-yellow-100 text-yellow-600"
-            subtitle="Leaves awaiting approval"
-          />
-          <StatCard
-            title="Approved Leaves"
-            value={stats.approvedLeaves}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-green-100 text-green-600"
-            subtitle="Leaves approved"
-          />
-          <StatCard
-            title="Rejected Leaves"
-            value={stats.rejectedLeaves}
-            icon={<XCircleIcon className="w-6 h-6" />}
-            color="bg-red-100 text-red-600"
-            subtitle="Leaves rejected"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <StatCard
+                  title="Total Leaves"
+                  value={stats.totalLeaves}
+                  icon={<UserIcon className="w-6 h-6" />}
+                  color="bg-gray-100 text-gray-600"
+                  subtitle="Total leave requests"
+                />
+                <StatCard
+                  title="Pending Leaves"
+                  value={stats.pendingLeaves}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-yellow-100 text-yellow-600"
+                  subtitle="Leaves awaiting approval"
+                />
+                <StatCard
+                  title="Approved Leaves"
+                  value={stats.approvedLeaves}
+                  icon={<CheckCircleIcon className="w-6 h-6" />}
+                  color="bg-green-100 text-green-600"
+                  subtitle="Leaves approved"
+                />
+                <StatCard
+                  title="Rejected Leaves"
+                  value={stats.rejectedLeaves}
+                  icon={<XCircleIcon className="w-6 h-6" />}
+                  color="bg-red-100 text-red-600"
+                  subtitle="Leaves rejected"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Search & Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">

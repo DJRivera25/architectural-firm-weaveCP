@@ -24,6 +24,8 @@ import {
 import { Project, Task } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 interface TaskStats {
   totalTasks: number;
@@ -362,56 +364,78 @@ export default function EmployeeTasksPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Tasks"
-            value={stats.totalTasks}
-            icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-blue-500 to-blue-600"
-            subtitle="All assigned tasks"
-          />
-          <StatCard
-            title="Completed"
-            value={stats.completedTasks}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            subtitle={`${stats.completionRate.toFixed(1)}% completion rate`}
-            trend={stats.completionRate > 70 ? "up" : "down"}
-            trendValue={`${stats.completionRate.toFixed(1)}%`}
-          />
-          <StatCard
-            title="In Progress"
-            value={stats.inProgressTasks}
-            icon={<PlayIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-orange-500 to-orange-600"
-            subtitle="Active tasks"
-          />
-          <StatCard
-            title="Overdue"
-            value={stats.overdueTasks}
-            icon={<ExclamationTriangleIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-red-500 to-red-600"
-            subtitle="Past due date"
-          />
-        </div>
-
-        {/* Additional Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <StatCard
-            title="Due Today"
-            value={stats.tasksDueToday}
-            icon={<CalendarDaysIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-yellow-500 to-yellow-600"
-            subtitle="Tasks due today"
-          />
-          <StatCard
-            title="Due This Week"
-            value={stats.tasksDueThisWeek}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-gradient-to-br from-indigo-500 to-indigo-600"
-            subtitle="Tasks due in 7 days"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                {[...Array(2)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Tasks"
+                  value={stats.totalTasks}
+                  icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-blue-500 to-blue-600"
+                  subtitle="All assigned tasks"
+                />
+                <StatCard
+                  title="Completed"
+                  value={stats.completedTasks}
+                  icon={<CheckCircleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-green-500 to-green-600"
+                  subtitle={`${stats.completionRate.toFixed(1)}% completion rate`}
+                  trend={stats.completionRate > 70 ? "up" : "down"}
+                  trendValue={`${stats.completionRate.toFixed(1)}%`}
+                />
+                <StatCard
+                  title="In Progress"
+                  value={stats.inProgressTasks}
+                  icon={<PlayIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-orange-500 to-orange-600"
+                  subtitle="Active tasks"
+                />
+                <StatCard
+                  title="Overdue"
+                  value={stats.overdueTasks}
+                  icon={<ExclamationTriangleIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-red-500 to-red-600"
+                  subtitle="Past due date"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <StatCard
+                  title="Due Today"
+                  value={stats.tasksDueToday}
+                  icon={<CalendarDaysIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-yellow-500 to-yellow-600"
+                  subtitle="Tasks due today"
+                />
+                <StatCard
+                  title="Due This Week"
+                  value={stats.tasksDueThisWeek}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-gradient-to-br from-indigo-500 to-indigo-600"
+                  subtitle="Tasks due in 7 days"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">

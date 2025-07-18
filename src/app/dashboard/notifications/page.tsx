@@ -17,6 +17,8 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from "@heroicons/react/24/outline";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 const NOTIF_TYPES = ["info", "success", "warning", "error"] as const;
 type NotifType = (typeof NOTIF_TYPES)[number];
@@ -144,53 +146,64 @@ export default function AdminNotificationsPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <BellIcon className="w-6 h-6 text-blue-600" />
+          {loading ? (
+            <>
+              <LoadingSkeleton height={100} />
+              <LoadingSkeleton height={100} />
+              <LoadingSkeleton height={100} />
+              <LoadingSkeleton height={100} />
+            </>
+          ) : (
+            <>
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <BellIcon className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Unread</p>
+                    <p className="text-2xl font-bold text-blue-600">{stats.unread}</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Unread</p>
-                <p className="text-2xl font-bold text-blue-600">{stats.unread}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <InboxIcon className="w-6 h-6 text-gray-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-gray-100 rounded-lg">
+                    <InboxIcon className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Total</p>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircleIcon className="w-6 h-6 text-green-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <CheckCircleIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Recent (7d)</p>
+                    <p className="text-2xl font-bold text-green-600">{stats.recent}</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Recent (7d)</p>
-                <p className="text-2xl font-bold text-green-600">{stats.recent}</p>
-              </div>
-            </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <PaperAirplaneIcon className="w-6 h-6 text-purple-600" />
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <PaperAirplaneIcon className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Sent</p>
+                    <p className="text-2xl font-bold text-purple-600">{stats.sent}</p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Sent</p>
-                <p className="text-2xl font-bold text-purple-600">{stats.sent}</p>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
@@ -261,64 +274,71 @@ export default function AdminNotificationsPage() {
               </div>
 
               {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="text-gray-600 mt-2">Loading notifications...</p>
-                </div>
+                <LoadingSkeleton height={200} />
               ) : filtered.length === 0 ? (
                 <div className="text-center py-8">
                   <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
                   <p className="text-gray-500">No notifications found.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {filtered.map((n) => (
-                    <div
-                      key={n._id}
-                      className={`p-4 rounded-lg border ${
-                        n.read ? "bg-gray-50 border-gray-200" : "bg-white border-blue-200"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start space-x-3 flex-1">
-                          <div className="mt-1">{getTypeIcon(n.type)}</div>
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(n.type)}`}>
-                                {n.type.charAt(0).toUpperCase() + n.type.slice(1)}
-                              </span>
-                              {!n.read && (
-                                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                                  Unread
-                                </span>
-                              )}
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                  >
+                    <div className="space-y-4">
+                      {filtered.map((n) => (
+                        <div
+                          key={n._id}
+                          className={`p-4 rounded-lg border ${
+                            n.read ? "bg-gray-50 border-gray-200" : "bg-white border-blue-200"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-3 flex-1">
+                              <div className="mt-1">{getTypeIcon(n.type)}</div>
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <span
+                                    className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(n.type)}`}
+                                  >
+                                    {n.type.charAt(0).toUpperCase() + n.type.slice(1)}
+                                  </span>
+                                  {!n.read && (
+                                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                      Unread
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-gray-900 mb-2">{n.message}</p>
+                                <p className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleString()}</p>
+                              </div>
                             </div>
-                            <p className="text-gray-900 mb-2">{n.message}</p>
-                            <p className="text-xs text-gray-500">{new Date(n.createdAt).toLocaleString()}</p>
+                            <div className="flex space-x-2">
+                              {!n.read && (
+                                <button
+                                  onClick={() => markAsRead(n._id)}
+                                  className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                  title="Mark as read"
+                                >
+                                  <EyeIcon className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => deleteNotification(n._id)}
+                                className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                title="Delete notification"
+                              >
+                                <TrashIcon className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex space-x-2">
-                          {!n.read && (
-                            <button
-                              onClick={() => markAsRead(n._id)}
-                              className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
-                              title="Mark as read"
-                            >
-                              <EyeIcon className="w-4 h-4" />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => deleteNotification(n._id)}
-                            className="p-1 text-red-600 hover:text-red-800 transition-colors"
-                            title="Delete notification"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </motion.div>
+                </AnimatePresence>
               )}
             </div>
           </main>

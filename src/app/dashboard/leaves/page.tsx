@@ -4,24 +4,19 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getLeaves } from "@/utils/api";
 import { LeaveWithUser, LeaveStatus } from "@/types";
 import {
-  CalendarDaysIcon,
-  PlusIcon,
-  MagnifyingGlassIcon,
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
   UserIcon,
   DocumentTextIcon,
   CalendarIcon,
   EyeIcon,
   PencilIcon,
-  TrashIcon,
   ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 
 export default function AdminLeavesPage() {
   const [leaves, setLeaves] = useState<LeaveWithUser[]>([]);
@@ -193,17 +188,6 @@ export default function AdminLeavesPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <div className="flex flex-col items-center justify-center h-96">
-          <ClipboardDocumentListIcon className="w-16 h-16 text-blue-400 animate-pulse mb-4" />
-          <div className="text-blue-600 text-xl font-semibold animate-pulse">Loading leave requests...</div>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout>
       <div className="mx-auto px-4">
@@ -216,36 +200,55 @@ export default function AdminLeavesPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard
-            title="Total Leaves"
-            value={totalLeaves}
-            icon={<UserIcon className="w-6 h-6" />}
-            color="bg-gray-100 text-gray-600"
-            subtitle="Total leave requests"
-          />
-          <StatCard
-            title="Pending Leaves"
-            value={pendingLeaves}
-            icon={<ClockIcon className="w-6 h-6" />}
-            color="bg-yellow-100 text-yellow-600"
-            subtitle="Leaves awaiting approval"
-          />
-          <StatCard
-            title="Approved Leaves"
-            value={approvedLeaves}
-            icon={<CheckCircleIcon className="w-6 h-6" />}
-            color="bg-green-100 text-green-600"
-            subtitle="Leaves approved"
-          />
-          <StatCard
-            title="Rejected Leaves"
-            value={rejectedLeaves}
-            icon={<XCircleIcon className="w-6 h-6" />}
-            color="bg-red-100 text-red-600"
-            subtitle="Leaves rejected"
-          />
-        </div>
+        <AnimatePresence mode="wait">
+          {loading ? (
+            <motion.div key="loading-stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <LoadingSkeleton key={i} height={120} />
+                ))}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="stats"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard
+                  title="Total Leaves"
+                  value={totalLeaves}
+                  icon={<UserIcon className="w-6 h-6" />}
+                  color="bg-gray-100 text-gray-600"
+                  subtitle="Total leave requests"
+                />
+                <StatCard
+                  title="Pending Leaves"
+                  value={pendingLeaves}
+                  icon={<ClockIcon className="w-6 h-6" />}
+                  color="bg-yellow-100 text-yellow-600"
+                  subtitle="Leaves awaiting approval"
+                />
+                <StatCard
+                  title="Approved Leaves"
+                  value={approvedLeaves}
+                  icon={<CheckCircleIcon className="w-6 h-6" />}
+                  color="bg-green-100 text-green-600"
+                  subtitle="Leaves approved"
+                />
+                <StatCard
+                  title="Rejected Leaves"
+                  value={rejectedLeaves}
+                  icon={<XCircleIcon className="w-6 h-6" />}
+                  color="bg-red-100 text-red-600"
+                  subtitle="Leaves rejected"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Search & Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">

@@ -9,47 +9,72 @@ export type WhyWeaveCard = {
   image: string;
 };
 
+const defaultCards: WhyWeaveCard[] = [
+  {
+    title: "Architectural Proficiency",
+    description:
+      "Our team of architects is proficient in architectural design, and takes great care to understand our clients' design language. Therefore we ensure that all output is consistent with the client's design intent, is compliant with applicable regulations, and is constructible.",
+    image: "/viber_image_2024-08-20_10-24-20-974.jpg",
+  },
+  {
+    title: "The Right Tools",
+    description:
+      "Our team is equipped with the powerful equipment and industry-standard software necessary to deliver the output the client needs, promptly and accurately.",
+    image: "/viber_image_2024-08-20_10-27-11-706.jpg",
+  },
+  {
+    title: "A Culture of Joy",
+    description:
+      "Our unique blend of joy and service, a hallmark of Filipino culture, sets us apart. We believe in a collaborative process that ensures client satisfaction. Our commitment to service guarantees that even the most challenging projects are handled with care and professionalism.",
+    image: "/DENS0741.jpg",
+  },
+];
+
 export type WhyWeaveProps = {
   heading?: string;
-  paragraph1?: string;
-  paragraph2?: string;
+  cards?: WhyWeaveCard[];
 };
 
-export default function WhyWeave({
-  heading = "Why Weave?",
-  paragraph1 = "Weave Collaboration Partners is more than just an outsourcing company. We are your strategic partner, dedicated to making your business easier, simpler, and more profitable. We handle the mechanical and routine tasks, allowing you to focus on the imaginative, the creative, the functional, and the beautiful.",
-  paragraph2 = "Think of us as a seamless extension of your team—a remote resource that delivers high-quality work with the same efficiency and excellence you expect from your own staff. Our process is designed to integrate seamlessly with your workflow, ensuring consistent results and peace of mind.",
-}: WhyWeaveProps) {
+export default function WhyWeave({ heading = "Why Weave?", cards = defaultCards }: WhyWeaveProps) {
   return (
     <section className="py-16 bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.h2
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6"
+          className="text-3xl sm:text-5xl font-bold text-gray-900 mb-12 text-center"
         >
           {heading}
         </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="text-lg text-gray-600 mb-6"
-        >
-          {paragraph1}
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          viewport={{ once: true }}
-          className="text-lg text-gray-600"
-        >
-          {paragraph2}
-        </motion.p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {cards.map((card, idx) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, delay: 0.1 * idx }}
+              viewport={{ once: true }}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col h-full"
+            >
+              <div className="relative w-full h-64 rounded-t-lg overflow-hidden">
+                <Image
+                  src={card.image}
+                  alt={card.title}
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  priority={idx === 0}
+                />
+              </div>
+              <div className="flex-1 flex flex-col p-6">
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">{card.title}</h3>
+                <p className="text-gray-700 text-base flex-1">{card.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
