@@ -113,7 +113,7 @@ export default function OurTeam({ management = defaultManagement, production = d
         <div className="mb-16">
           <h3 className="text-2xl font-semibold text-center mb-8 text-blue-100 tracking-wide uppercase">Management</h3>
           <motion.div
-            className="flex flex-col md:flex-row justify-center items-center gap-2 m-0"
+            className="grid grid-cols-2 lg:grid-cols-2 gap-8 justify-items-center m-0"
             variants={{ visible: { transition: { staggerChildren: 0.13 } } }}
           >
             {management.map((member, idx) => (
@@ -131,7 +131,7 @@ export default function OurTeam({ management = defaultManagement, production = d
             Production Team Leads
           </h3>
           <motion.div
-            className="flex flex-col md:flex-row justify-center items-center gap-2 m-0"
+            className="grid grid-cols-2 lg:grid-cols-4 gap-8 m-0 justify-items-center"
             variants={{ visible: { transition: { staggerChildren: 0.13 } } }}
           >
             {production.map((member, idx) => (
