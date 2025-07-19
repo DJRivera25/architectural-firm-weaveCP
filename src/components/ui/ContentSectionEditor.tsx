@@ -24,7 +24,7 @@ import dynamic from "next/dynamic";
 import HeroSection from "./HeroSection";
 import AboutPreview from "./AboutPreview";
 import ProcessPreview from "./ProcessPreview";
-import PortfolioPreview from "./PortfolioPreview";
+import ServicesPreview from "./ServicesPreview";
 import OurTeam from "./OurTeam";
 import ContactCTA from "./ContactCTA";
 import WhyWeave from "./WhyWeave";
@@ -34,7 +34,7 @@ import type { WhyWeaveProps } from "./WhyWeave";
 import type { HeroSectionProps } from "./HeroSection";
 import type { AboutPreviewProps } from "./AboutPreview";
 import type { ProcessPreviewProps } from "./ProcessPreview";
-import type { PortfolioPreviewProps } from "./PortfolioPreview";
+import type { ServicesPreviewProps } from "./ServicesPreview";
 import type { OurTeamProps } from "./OurTeam";
 import type { ContactCTAProps } from "./ContactCTA";
 
@@ -150,7 +150,7 @@ export function ContentSectionEditor({ sectionId }: ContentSectionEditorProps) {
     about: AboutPreviewProps;
     "why-weave": WhyWeaveProps;
     process: ProcessPreviewProps;
-    portfolio: PortfolioPreviewProps;
+    portfolio: ServicesPreviewProps;
     team: OurTeamProps;
     contact: ContactCTAProps;
     footer: FooterProps;
@@ -1137,7 +1137,7 @@ export function ContentSectionEditor({ sectionId }: ContentSectionEditorProps) {
         previewContent = <ProcessPreview {...(draft as ProcessPreviewProps)} />;
         break;
       case "portfolio":
-        previewContent = <PortfolioPreview {...(draft as PortfolioPreviewProps)} />;
+        previewContent = <ServicesPreview {...(draft as ServicesPreviewProps)} />;
         break;
       case "team":
         previewContent = <OurTeam {...(draft as OurTeamProps)} />;
@@ -1357,7 +1357,7 @@ export function ContentSectionEditor({ sectionId }: ContentSectionEditorProps) {
                       <OurTeam {...allDraftData.team} />
                     </section>
                     <section aria-labelledby="portfolio-heading">
-                      <PortfolioPreview {...allDraftData.portfolio} />
+                      <ServicesPreview {...allDraftData.portfolio} />
                     </section>
                     <section aria-labelledby="contact-heading">
                       <ContactCTA {...allDraftData.contact} />

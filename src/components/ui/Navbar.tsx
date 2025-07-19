@@ -9,6 +9,7 @@ import { Fragment, useRef } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 export default function Navbar() {
   const { data: session } = useSession() as { data: ExtendedSession | null };
@@ -101,16 +102,16 @@ export default function Navbar() {
 
       {/* Main Navigation Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo Area */}
-          <div className="flex items-center flex-shrink-0 min-w-[180px]">
+          <div className="flex items-center flex-shrink-0 min-w-[180px] sm:min-w-[180px] min-w-[140px]">
             <Link href="/" className="flex items-center space-x-3 group" aria-label="Weave Home">
               <Image
                 src="/weave-hsymbol-tri.svg"
                 alt="Weave Logo Symbol"
                 width={64}
                 height={64}
-                className="h-16 w-auto transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg"
+                className="h-12 w-auto sm:h-16 transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-lg"
                 priority
                 draggable={false}
               />
@@ -253,14 +254,14 @@ export default function Navbar() {
           <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-blue-700 focus:outline-none focus:text-blue-700"
+              className="text-blue-700 hover:text-blue-800 focus:outline-none focus:text-blue-800 transition-colors duration-300 p-2 rounded-lg hover:bg-blue-50"
               aria-label="Open menu"
             >
-              <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
                 )}
               </svg>
             </button>
@@ -268,156 +269,216 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation Overlay */}
-      <Transition
-        show={isMenuOpen}
-        as={Fragment}
-        enter="transition-opacity duration-200"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="transition-opacity duration-150"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
+      {/* Mobile Navigation Dropdown */}
+      <motion.div
+        initial={{ opacity: 0, height: 0, scale: 0.95, y: -10 }}
+        animate={
+          isMenuOpen ? { opacity: 1, height: "auto", scale: 1, y: 0 } : { opacity: 0, height: 0, scale: 0.95, y: -10 }
+        }
+        transition={{
+          duration: 0.4,
+          ease: "easeOut",
+          height: {
+            duration: 0.5,
+            ease: "easeOut",
+          },
+          scale: {
+            duration: 0.3,
+            ease: "easeOut",
+          },
+          y: {
+            duration: 0.3,
+            ease: "easeOut",
+          },
+        }}
+        className="fixed top-16 sm:top-20 left-1/2 transform -translate-x-1/2 z-40 lg:hidden overflow-hidden"
       >
-        <div className="fixed inset-0 z-40 bg-white bg-opacity-95 backdrop-blur-sm flex flex-col items-center justify-center space-y-8 p-8 lg:hidden">
-          {/* Logo and Close */}
-          <div className="absolute top-8 left-8 flex items-center">
-            <Image
-              src="/weave-hsymbol-tri.svg"
-              alt="Weave Logo Symbol"
-              width={40}
-              height={40}
-              className="h-8 w-auto"
-              priority
-              draggable={false}
-            />
-          </div>
-          <button
-            onClick={() => setIsMenuOpen(false)}
-            className="absolute top-8 right-8 text-gray-700 hover:text-blue-700 focus:outline-none"
-            aria-label="Close menu"
-          >
-            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          {/* Nav Links */}
-          <div className="flex flex-col items-center space-y-6 mt-12 w-full">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.isContact ? "#contact" : item.href}
-                onClick={(e) => {
-                  if (item.isContact) {
-                    handleContactClick(e);
-                  } else {
-                    setIsMenuOpen(false);
-                  }
-                }}
-                className={`text-2xl font-semibold transition-all duration-300 hover:bg-blue-50 px-6 py-3 rounded-lg ${
-                  item.isContact
-                    ? "text-blue-600 hover:text-blue-700 animate-pulse hover:animate-none"
-                    : "text-gray-800 hover:text-blue-700"
-                }`}
-              >
-                <span className="relative">
-                  {item.label}
-                  {item.isContact && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
-                  )}
-                </span>
-              </Link>
-            ))}
-            {/* Dropdown for Services in mobile */}
-            <Menu as="div" className="relative w-full flex flex-col items-center">
-              <Menu.Button className="inline-flex items-center text-2xl font-semibold text-gray-800 hover:text-blue-700 transition-colors focus:outline-none">
-                Services
-                <ChevronDownIcon
-                  className="ml-2 h-6 w-6 text-gray-500 group-hover:text-blue-700 transition-colors"
-                  aria-hidden="true"
-                />
-              </Menu.Button>
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-200"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-150"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="mt-2 w-72 origin-top rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-100">
-                  <div className="py-3">
-                    <div className="relative">
-                      {/* Background Pattern */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-indigo-50/30" />
-                      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-200/50 to-transparent" />
+        {/* Dropdown Container */}
+        <div className="w-80 bg-gradient-to-br from-white via-gray-50/95 to-white shadow-2xl border border-gray-200/50 backdrop-blur-xl rounded-b-2xl">
+          {/* Beautiful Yellow Top Border */}
+          <div className="h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
 
-                      <div className="relative py-4">
-                        <div className="space-y-1">
-                          {servicesDropdown.map((service, index) => (
-                            <Menu.Item key={service.href}>
-                              {({ active }) => (
-                                <Link
-                                  href={service.href}
-                                  className={`block px-6 py-4 text-base font-semibold transition-all duration-300 group ${
-                                    active
-                                      ? "bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-700 shadow-sm border-l-4 border-blue-500"
-                                      : "text-gray-700 hover:text-blue-700 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50"
-                                  }`}
-                                  onClick={() => setIsMenuOpen(false)}
-                                  style={{
-                                    animationDelay: `${index * 30}ms`,
-                                    animationFillMode: "both",
-                                  }}
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <span className="truncate font-medium">{service.label}</span>
-                                    <svg
-                                      className={`w-4 h-4 transition-all duration-300 ${
-                                        active
-                                          ? "text-blue-600 translate-x-1"
-                                          : "text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1"
-                                      }`}
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M9 5l7 7-7 7"
-                                      />
-                                    </svg>
-                                  </div>
-                                </Link>
-                              )}
-                            </Menu.Item>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+          {/* Navigation Links with Scroll Animation */}
+          <div className="p-4 space-y-1">
+            {navItems.map((item, index) => (
+              <motion.div
+                key={item.href}
+                initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
+                animate={
+                  isMenuOpen
+                    ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                    : { opacity: 0, y: -15, height: 0, scale: 0.98 }
+                }
+                transition={{
+                  duration: 0.3,
+                  delay: index * 0.08,
+                  ease: "easeOut",
+                  height: {
+                    duration: 0.25,
+                    delay: index * 0.08,
+                    ease: "easeOut",
+                  },
+                  scale: {
+                    duration: 0.2,
+                    delay: index * 0.08,
+                    ease: "easeOut",
+                  },
+                }}
+                className="overflow-hidden"
+              >
+                <Link
+                  href={item.isContact ? "#contact" : item.href}
+                  onClick={(e) => {
+                    if (item.isContact) {
+                      handleContactClick(e);
+                    } else {
+                      setIsMenuOpen(false);
+                    }
+                  }}
+                  className={`block w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 group ${
+                    item.isContact
+                      ? "text-blue-600 hover:text-blue-700 hover:bg-blue-50/80 animate-pulse hover:animate-none"
+                      : "text-gray-700 hover:text-blue-700 hover:bg-gray-50/80"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="relative">
+                      {item.label}
+                      {item.isContact && (
+                        <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
+                      )}
+                    </span>
+                    <svg
+                      className="w-3 h-3 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
                   </div>
-                </Menu.Items>
-              </Transition>
-            </Menu>
+                </Link>
+              </motion.div>
+            ))}
+
+            {/* Services Section with Sub-items */}
+            <motion.div
+              initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
+              animate={
+                isMenuOpen
+                  ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                  : { opacity: 0, y: -15, height: 0, scale: 0.98 }
+              }
+              transition={{
+                duration: 0.3,
+                delay: navItems.length * 0.08,
+                ease: "easeOut",
+                height: {
+                  duration: 0.25,
+                  delay: navItems.length * 0.08,
+                  ease: "easeOut",
+                },
+                scale: {
+                  duration: 0.2,
+                  delay: navItems.length * 0.08,
+                  ease: "easeOut",
+                },
+              }}
+              className="space-y-1 overflow-hidden"
+            >
+              <div className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border border-blue-100/50">
+                <div className="flex items-center justify-between">
+                  <span>Services</span>
+                  <ChevronDownIcon className="h-4 w-4 text-blue-600" />
+                </div>
+              </div>
+              <div className="ml-3 space-y-0.5">
+                {servicesDropdown.map((service, index) => (
+                  <motion.div
+                    key={service.href}
+                    initial={{ opacity: 0, y: -10, height: 0, scale: 0.98 }}
+                    animate={
+                      isMenuOpen
+                        ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                        : { opacity: 0, y: -10, height: 0, scale: 0.98 }
+                    }
+                    transition={{
+                      duration: 0.25,
+                      delay: (navItems.length + index) * 0.06,
+                      ease: "easeOut",
+                      height: {
+                        duration: 0.2,
+                        delay: (navItems.length + index) * 0.06,
+                        ease: "easeOut",
+                      },
+                      scale: {
+                        duration: 0.15,
+                        delay: (navItems.length + index) * 0.06,
+                        ease: "easeOut",
+                      },
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <Link
+                      href={service.href}
+                      className="block w-full px-3 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:text-blue-700 hover:bg-blue-50/60 transition-all duration-300 group"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="truncate">{service.label}</span>
+                        <svg
+                          className="w-2.5 h-2.5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
 
             {/* User Actions */}
             {session ? (
-              <div className="flex flex-col items-center space-y-4 mt-4">
+              <motion.div
+                initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
+                animate={
+                  isMenuOpen
+                    ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                    : { opacity: 0, y: -15, height: 0, scale: 0.98 }
+                }
+                transition={{
+                  duration: 0.3,
+                  delay: (navItems.length + servicesDropdown.length) * 0.06,
+                  ease: "easeOut",
+                  height: {
+                    duration: 0.25,
+                    delay: (navItems.length + servicesDropdown.length) * 0.06,
+                    ease: "easeOut",
+                  },
+                  scale: {
+                    duration: 0.2,
+                    delay: (navItems.length + servicesDropdown.length) * 0.06,
+                    ease: "easeOut",
+                  },
+                }}
+                className="pt-3 space-y-1 border-t border-gray-200/50 overflow-hidden"
+              >
                 {session?.user?.role === "admin" && (
                   <Link
                     href="/admin"
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg text-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg"
+                    className="block w-full px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg text-center"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Admin
+                    Admin Dashboard
                   </Link>
                 )}
                 <Link
                   href="/dashboard"
-                  className="text-gray-800 hover:text-blue-700 px-6 py-3 rounded-lg text-xl font-semibold transition-all duration-300 hover:bg-gray-50"
+                  className="block w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-blue-700 hover:bg-gray-50/80 transition-all duration-300 text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
@@ -427,23 +488,48 @@ export default function Navbar() {
                     signOut();
                     setIsMenuOpen(false);
                   }}
-                  className="text-gray-800 hover:text-red-600 px-6 py-3 rounded-lg text-xl font-semibold transition-all duration-300 hover:bg-red-50"
+                  className="block w-full px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50/80 transition-all duration-300 text-center"
                 >
                   Logout
                 </button>
-              </div>
+              </motion.div>
             ) : (
-              <Link
-                href="/login"
-                className="bg-blue-600 text-white px-8 py-3 rounded-md text-2xl font-semibold hover:bg-blue-700 transition-colors mt-4"
-                onClick={() => setIsMenuOpen(false)}
+              <motion.div
+                initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
+                animate={
+                  isMenuOpen
+                    ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                    : { opacity: 0, y: -15, height: 0, scale: 0.98 }
+                }
+                transition={{
+                  duration: 0.3,
+                  delay: (navItems.length + servicesDropdown.length) * 0.06,
+                  ease: "easeOut",
+                  height: {
+                    duration: 0.25,
+                    delay: (navItems.length + servicesDropdown.length) * 0.06,
+                    ease: "easeOut",
+                  },
+                  scale: {
+                    duration: 0.2,
+                    delay: (navItems.length + servicesDropdown.length) * 0.06,
+                    ease: "easeOut",
+                  },
+                }}
+                className="pt-3 border-t border-gray-200/50 overflow-hidden"
               >
-                Login
-              </Link>
+                <Link
+                  href="/login"
+                  className="block w-full px-3 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg text-center"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login
+                </Link>
+              </motion.div>
             )}
           </div>
         </div>
-      </Transition>
+      </motion.div>
     </nav>
   );
 }
