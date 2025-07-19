@@ -22,8 +22,22 @@ export default function AboutPreview({
   image = "/viber_image_2024-08-20_10-50-36-119.jpg",
 }: AboutPreviewProps) {
   return (
-    <section className="py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-12 relative overflow-hidden">
+      {/* Background Image with Blur and Overlay */}
+      <div className="absolute inset-0 overflow-hidden">
+        <Image
+          src="/bg-who-we-are-1.jpg"
+          alt="Team Background"
+          fill
+          className="object-cover scale-90 opacity-70"
+          sizes="100vw"
+          priority
+          style={{ objectPosition: "center" }}
+        />
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, x: -50 }}

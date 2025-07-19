@@ -16,9 +16,9 @@ export type ContactCTAProps = {
 };
 
 const defaultStats: ContactStat[] = [
-  { label: "Projects Completed", value: "500+" },
-  { label: "Years Experience", value: "20+" },
-  { label: "Client Satisfaction", value: "100%" },
+  { label: "Projects Completed", value: "50+" },
+  { label: "Years Experience", value: "4+" },
+  { label: "Client Satisfaction", value: "98%" },
 ];
 
 export default function ContactCTA({

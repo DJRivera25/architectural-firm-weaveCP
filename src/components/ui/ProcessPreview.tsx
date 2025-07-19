@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiUser, FiClipboard, FiCode, FiCheckCircle, FiSettings, FiMail } from "react-icons/fi";
 import React from "react";
+import Image from "next/image";
 
 export type ProcessStep = {
   number: string;
@@ -71,10 +72,22 @@ export default function ProcessPreview({
         hidden: {},
         visible: { transition: { staggerChildren: 0.12 } },
       }}
-      className="relative py-10 sm:py-20 bg-white px-4 mx-2 sm:px-6 lg:px-8 overflow-visible"
+      className="relative py-10 sm:py-20 px-4 mx-2 sm:px-6 lg:px-8 overflow-visible"
     >
-      {/* Decorative background accent */}
-      {/* No background accent */}
+      {/* Background Image with Blur and Overlay */}
+      <div className="absolute inset-0 overflow-hidden">
+        <Image
+          src="/bg-our-process-1.png"
+          alt="Process Background"
+          fill
+          className="object-cover blur-sm opacity-70"
+          sizes="100vw"
+          priority
+          style={{ objectPosition: "center" }}
+        />
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm" />
+      </div>
+
       <div className="relative max-w-7xl mx-auto z-10 px-2">
         <div className="text-center mb-4 mx-auto">
           <motion.h2
@@ -194,7 +207,7 @@ export default function ProcessPreview({
               whileInView={{ opacity: 1, scaleY: 1 }}
               transition={{ duration: 1.2, delay: steps.length * 0.13, ease: "easeInOut" }}
               viewport={{ once: true }}
-              className="absolute left-1/2 -translate-x-1/2 top-0 w-0.5 h-full bg-yellow-500 z-0 origin-top pointer-events-none"
+              className="hidden absolute left-1/2 -translate-x-1/2 top-0 w-0.5 h-full bg-yellow-500 z-0 origin-top pointer-events-none"
             />
             {steps.map((step, idx) => (
               <React.Fragment key={step.number + step.title}>
