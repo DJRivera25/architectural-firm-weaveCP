@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { services } from "../page";
+import { services } from "@/data/services";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
 import { Badge } from "@/components/ui/Badge";
@@ -29,7 +29,7 @@ type ProjectType = {
 };
 
 // Each service has at least one completed project using its before/after images
-const projects: ProjectType[] = services.map((service) => ({
+const projects: ProjectType[] = services.map((service: ServiceType) => ({
   name: service.title,
   description: service.description,
   afterImage: service.afterImage,
@@ -40,8 +40,8 @@ const projects: ProjectType[] = services.map((service) => ({
 type Params = { slug: string };
 export default function ServiceDetailPage() {
   const { slug } = useParams() as Params;
-  const service = services.find((s) => s.slug === slug);
-  const otherServices = services.filter((s) => s.slug !== slug);
+  const service = services.find((s: ServiceType) => s.slug === slug);
+  const otherServices = services.filter((s: ServiceType) => s.slug !== slug);
   const relatedProjects: ProjectType[] = projects.filter((p) => p.serviceSlug === slug);
 
   // Before/After animation state for commercial section
@@ -295,7 +295,7 @@ export default function ServiceDetailPage() {
             Explore Other Services
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-            {otherServices.map((s, idx) => (
+            {otherServices.map((s: ServiceType, idx: number) => (
               <a
                 key={s.slug}
                 href={`/services/${s.slug}`}
