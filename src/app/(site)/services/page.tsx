@@ -4,13 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { FileText, Layers3, Ruler, Image as LucideImage, Building2, PenTool } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 
 const services = [
   {
     title: "3D TO DETAILED DRAWINGS",
     description:
       "Transform your 3D models into comprehensive technical drawings with precise measurements and specifications.",
-    icon: "🎯",
+    icon: <Layers3 className="w-6 h-6 text-blue-700" />,
     features: ["Precision Engineering", "Technical Specifications", "Multi-view Documentation", "Quality Assurance"],
     color: "from-blue-500 to-indigo-600",
     gradient: "from-blue-400/20 to-indigo-500/20",
@@ -21,7 +23,7 @@ const services = [
   {
     title: "CAD TO 3D MODEL AND RENDER",
     description: "Convert your 2D CAD designs into stunning 3D visualizations that bring your concepts to life.",
-    icon: "🔄",
+    icon: <FileText className="w-6 h-6 text-emerald-700" />,
     features: ["3D Visualization", "Realistic Rendering", "Interactive Models", "Design Validation"],
     color: "from-emerald-500 to-teal-600",
     gradient: "from-emerald-400/20 to-teal-500/20",
@@ -33,7 +35,7 @@ const services = [
     title: "SKETCHUP TO 3D RENDER",
     description:
       "Transform your SketchUp models into photorealistic 3D renders with professional lighting and materials.",
-    icon: "🎨",
+    icon: <LucideImage className="w-6 h-6 text-purple-700" />,
     features: ["Photorealistic Rendering", "Professional Lighting", "Material Mapping", "High-Resolution Output"],
     color: "from-purple-500 to-pink-600",
     gradient: "from-purple-400/20 to-pink-500/20",
@@ -45,7 +47,7 @@ const services = [
     title: "CAD TO DETAILED DRAWINGS",
     description:
       "Convert your CAD files into comprehensive technical drawings with precise measurements and annotations.",
-    icon: "📐",
+    icon: <Ruler className="w-6 h-6 text-orange-700" />,
     features: [
       "Technical Documentation",
       "Precision Measurements",
@@ -61,7 +63,7 @@ const services = [
   {
     title: "IMAGE TO DETAILED DRAWINGS",
     description: "Transform photographs and sketches into precise architectural drawings and technical documentation.",
-    icon: "📸",
+    icon: <LucideImage className="w-6 h-6 text-cyan-700" />,
     features: ["Image Analysis", "Precision Conversion", "Scale Accuracy", "Professional Documentation"],
     color: "from-cyan-500 to-blue-600",
     gradient: "from-cyan-400/20 to-blue-500/20",
@@ -72,7 +74,7 @@ const services = [
   {
     title: "BIM LOD200 TO LOD500",
     description: "Building Information Modeling services for comprehensive project management and collaboration.",
-    icon: "🏗️",
+    icon: <Building2 className="w-6 h-6 text-indigo-700" />,
     features: ["3D Modeling", "Data Integration", "Collaboration Tools", "Project Management"],
     color: "from-indigo-500 to-purple-600",
     gradient: "from-indigo-400/20 to-purple-500/20",
@@ -83,7 +85,7 @@ const services = [
   {
     title: "SKETCH TO DETAILED DRAWINGS",
     description: "Convert hand-drawn sketches into professional architectural drawings with complete specifications.",
-    icon: "✏️",
+    icon: <PenTool className="w-6 h-6 text-green-700" />,
     features: ["Sketch Interpretation", "Technical Drawing", "Specification Details", "Professional Standards"],
     color: "from-green-500 to-emerald-600",
     gradient: "from-green-400/20 to-emerald-500/20",
@@ -235,7 +237,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Services Grid */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 pb-24">
+      <section className="relative z-10 max-w-7xl mx-auto px-2 pb-16">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -247,7 +249,7 @@ export default function ServicesPage() {
               transition: { staggerChildren: 0.13, delayChildren: 0.1 },
             },
           }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {services.map((service, index) => (
             <motion.div
@@ -256,11 +258,11 @@ export default function ServicesPage() {
                 hidden: { opacity: 0, y: 40, scale: 0.97 },
                 visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: "easeOut" } },
               }}
-              className="relative bg-white/70 backdrop-blur-xl rounded-3xl shadow-2xl hover:shadow-3xl transition-all duration-500 border border-blue-100 overflow-hidden flex flex-col group glassmorphism-card"
-              style={{ boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15)" }}
+              className="relative bg-white/80 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-400 border border-blue-100 overflow-hidden flex flex-col group"
+              style={{ boxShadow: "0 4px 16px 0 rgba(31, 38, 135, 0.10)" }}
             >
-              {/* Image Section */}
-              <div className="relative h-56 overflow-hidden group">
+              {/* Image Section with Badges */}
+              <div className="relative h-40 overflow-hidden group">
                 <Image
                   src={service.afterImage}
                   alt={`${service.title} - Final Result`}
@@ -287,68 +289,65 @@ export default function ServicesPage() {
                   }`}
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                {/* Gradient Overlay */}
+                {/* Client's File Badge */}
+                <div
+                  className={`absolute top-3 left-3 transition-all duration-500 ${
+                    isMobile
+                      ? mobileImageStates[index]
+                        ? "opacity-0"
+                        : "opacity-100"
+                      : "opacity-0 group-hover:opacity-100"
+                  }`}
+                >
+                  <Badge color="bg-gray-800/90 text-white">Client&apos;s File</Badge>
+                </div>
+                {/* Weave's Output Badge */}
+                <div
+                  className={`absolute top-3 right-3 transition-all duration-500 ${
+                    isMobile
+                      ? mobileImageStates[index]
+                        ? "opacity-100"
+                        : "opacity-0"
+                      : "opacity-100 group-hover:opacity-0"
+                  }`}
+                >
+                  <Badge color="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">Weave&apos;s Output</Badge>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
               </div>
               {/* Content Section */}
-              <div className="flex-1 p-6 flex flex-col justify-between">
+              <div className="flex-1 p-4 flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-2xl md:text-3xl">{service.icon}</span>
-                    <h3 className="text-lg md:text-xl font-bold text-blue-900 flex-1 pr-2">{service.title}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span>{service.icon}</span>
+                    <h3 className="text-base font-bold text-blue-900 flex-1 pr-2">{service.title}</h3>
                   </div>
-                  <p className="text-blue-900/80 mb-3 leading-relaxed text-sm md:text-base">{service.description}</p>
-                  <ul className="space-y-1.5 mb-3">
+                  <p className="text-blue-900/80 mb-2 leading-snug text-xs">{service.description}</p>
+                  <ul className="space-y-1 mb-2">
                     {service.features.map((feature, featureIndex) => (
-                      <motion.li
-                        key={feature}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.4, delay: featureIndex * 0.08 }}
-                        className="flex items-center text-xs md:text-sm text-blue-800"
-                      >
+                      <li key={feature} className="flex items-center text-xs text-blue-800">
                         <div
                           className={`w-1.5 h-1.5 bg-gradient-to-r ${service.color} rounded-full mr-2 flex-shrink-0`}
                         />
                         {feature}
-                      </motion.li>
+                      </li>
                     ))}
                   </ul>
                 </div>
-                <div className="mt-2 text-right">
+                <div className="mt-1 text-right">
                   <Link
                     href={`/services/${service.slug}`}
-                    className={`group/link relative inline-flex items-center text-sm font-semibold text-blue-700 hover:text-blue-900 transition-all duration-300 md:hover:scale-105`}
+                    className={`group/link relative inline-flex items-center text-xs font-semibold text-blue-700 hover:text-blue-900 transition-all duration-300 md:hover:scale-105`}
                   >
-                    <span className="relative z-10 text-base">See Details</span>
+                    <span className="relative z-10">See Details</span>
                     <div
                       className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r ${service.color} transition-all duration-500 ease-out md:w-0 md:group-hover/link:w-full md:group-hover/link:h-1 w-full`}
                     />
-                    <motion.svg
-                      className="ml-2 w-4 h-4 relative z-10 text-current hidden md:block"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      initial={{ x: 0 }}
-                      whileHover={{ x: 6 }}
-                      transition={{ duration: 0.4, ease: "easeOut" }}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </motion.svg>
-                    <svg
-                      className="ml-2 w-4 h-4 relative z-10 text-current md:hidden"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
                   </Link>
                 </div>
               </div>
-              {/* Hover effect border */}
               <div
-                className={`absolute inset-0 rounded-3xl bg-gradient-to-r ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none`}
+                className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${service.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none`}
               />
             </motion.div>
           ))}
@@ -364,7 +363,7 @@ export default function ServicesPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-2xl md:text-4xl font-bold text-blue-900 mb-6"
         >
-          What Our Customers Say
+          What Our Clients Say
         </motion.h2>
         <motion.div
           initial="hidden"
