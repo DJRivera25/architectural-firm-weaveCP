@@ -43,7 +43,7 @@ export default function Navbar() {
       const el = document.getElementById("contact");
       if (el) el.scrollIntoView({ behavior: "smooth" });
     } else {
-      router.push("/#contact");
+      router.push("/contact");
     }
     setIsMenuOpen(false);
   };
@@ -326,13 +326,7 @@ export default function Navbar() {
               >
                 <Link
                   href={item.href}
-                  onClick={(e) => {
-                    if (item.isContact) {
-                      handleContactClick(e);
-                    } else {
-                      setIsMenuOpen(false);
-                    }
-                  }}
+                  onClick={() => setIsMenuOpen(false)}
                   className={`block w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 group ${
                     item.isContact
                       ? "text-blue-600 hover:text-blue-700 hover:bg-blue-50/80 animate-pulse hover:animate-none"
