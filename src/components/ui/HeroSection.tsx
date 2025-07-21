@@ -125,7 +125,7 @@ export default function HeroSection({
               className="relative text-lg font-semibold text-white group cursor-pointer select-none px-0 py-0"
             >
               {cta1Text}
-              <span className="block h-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 w-full mt-1 transition-all duration-300 group-hover:h-1 group-hover:bg-yellow-500"></span>
+              <span className="block h-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 w-full mt-1 transition-all duration-300 group-hover:h-2 group-hover:bg-yellow-500"></span>
             </Link>
             <button
               type="button"
@@ -133,7 +133,7 @@ export default function HeroSection({
               onClick={() => setIsModalOpen(true)}
             >
               {cta2Text}
-              <span className="block h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 w-full mt-1 transition-all duration-300 group-hover:h-1 group-hover:bg-blue-400"></span>
+              <span className="block h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 w-full mt-1 transition-all duration-300 group-hover:h-2 group-hover:bg-blue-400"></span>
             </button>
           </motion.div>
           {/* No foreground image block, background is now animated */}

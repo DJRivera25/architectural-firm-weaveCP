@@ -1,10 +1,9 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { FileText, Layers3, Ruler, Image as LucideImage, Building2, PenTool } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 
 const services = [
@@ -12,7 +11,6 @@ const services = [
     title: "3D TO DETAILED DRAWINGS",
     description:
       "Transform your 3D models into comprehensive technical drawings with precise measurements and specifications.",
-    icon: <Layers3 className="w-6 h-6 text-blue-700" />,
     features: ["Precision Engineering", "Technical Specifications", "Multi-view Documentation", "Quality Assurance"],
     color: "from-blue-500 to-indigo-600",
     gradient: "from-blue-400/20 to-indigo-500/20",
@@ -23,7 +21,6 @@ const services = [
   {
     title: "CAD TO 3D MODEL AND RENDER",
     description: "Convert your 2D CAD designs into stunning 3D visualizations that bring your concepts to life.",
-    icon: <FileText className="w-6 h-6 text-emerald-700" />,
     features: ["3D Visualization", "Realistic Rendering", "Interactive Models", "Design Validation"],
     color: "from-emerald-500 to-teal-600",
     gradient: "from-emerald-400/20 to-teal-500/20",
@@ -35,7 +32,7 @@ const services = [
     title: "SKETCHUP TO 3D RENDER",
     description:
       "Transform your SketchUp models into photorealistic 3D renders with professional lighting and materials.",
-    icon: <LucideImage className="w-6 h-6 text-purple-700" />,
+
     features: ["Photorealistic Rendering", "Professional Lighting", "Material Mapping", "High-Resolution Output"],
     color: "from-purple-500 to-pink-600",
     gradient: "from-purple-400/20 to-pink-500/20",
@@ -47,7 +44,7 @@ const services = [
     title: "CAD TO DETAILED DRAWINGS",
     description:
       "Convert your CAD files into comprehensive technical drawings with precise measurements and annotations.",
-    icon: <Ruler className="w-6 h-6 text-orange-700" />,
+
     features: [
       "Technical Documentation",
       "Precision Measurements",
@@ -63,7 +60,7 @@ const services = [
   {
     title: "IMAGE TO DETAILED DRAWINGS",
     description: "Transform photographs and sketches into precise architectural drawings and technical documentation.",
-    icon: <LucideImage className="w-6 h-6 text-cyan-700" />,
+
     features: ["Image Analysis", "Precision Conversion", "Scale Accuracy", "Professional Documentation"],
     color: "from-cyan-500 to-blue-600",
     gradient: "from-cyan-400/20 to-blue-500/20",
@@ -74,7 +71,7 @@ const services = [
   {
     title: "BIM LOD200 TO LOD500",
     description: "Building Information Modeling services for comprehensive project management and collaboration.",
-    icon: <Building2 className="w-6 h-6 text-indigo-700" />,
+
     features: ["3D Modeling", "Data Integration", "Collaboration Tools", "Project Management"],
     color: "from-indigo-500 to-purple-600",
     gradient: "from-indigo-400/20 to-purple-500/20",
@@ -85,7 +82,7 @@ const services = [
   {
     title: "SKETCH TO DETAILED DRAWINGS",
     description: "Convert hand-drawn sketches into professional architectural drawings with complete specifications.",
-    icon: <PenTool className="w-6 h-6 text-green-700" />,
+
     features: ["Sketch Interpretation", "Technical Drawing", "Specification Details", "Professional Standards"],
     color: "from-green-500 to-emerald-600",
     gradient: "from-green-400/20 to-emerald-500/20",
@@ -94,6 +91,8 @@ const services = [
     slug: "sketch-to-detailed-drawing",
   },
 ];
+
+export { services };
 
 export default function ServicesPage() {
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
@@ -319,7 +318,6 @@ export default function ServicesPage() {
               <div className="flex-1 p-4 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span>{service.icon}</span>
                     <h3 className="text-base font-bold text-blue-900 flex-1 pr-2">{service.title}</h3>
                   </div>
                   <p className="text-blue-900/80 mb-2 leading-snug text-xs">{service.description}</p>
