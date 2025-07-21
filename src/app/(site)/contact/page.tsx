@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import Navbar from "@/components/ui/Navbar";
-import Footer from "@/components/ui/Footer";
+
 import { sendContactForm } from "@/utils/api";
 import type { ContactFormPayload } from "@/types";
 
@@ -92,10 +92,13 @@ export default function ContactPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 1.1, ease: "easeOut", delay: 0.1 }}
           >
-            <a href="/services" className="relative text-lg font-semibold text-white group cursor-pointer select-none">
+            <Link
+              href="/services"
+              className="relative text-lg font-semibold text-white group cursor-pointer select-none"
+            >
               VIEW SERVICES
               <span className="block h-0.5 bg-gradient-to-r from-blue-700 to-indigo-800 w-full mt-1 transition-all duration-300 group-hover:h-1 group-hover:bg-blue-700"></span>
-            </a>
+            </Link>
           </motion.div>
           {/* Right: Hero text */}
           <div className="flex-1 flex flex-col justify-center items-center md:items-end h-full w-full md:w-2/3 text-center md:text-right">
@@ -508,8 +511,6 @@ export default function ContactPage() {
           </motion.div>
         </div>
       </section>
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }
