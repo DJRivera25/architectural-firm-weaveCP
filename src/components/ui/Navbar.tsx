@@ -16,7 +16,6 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const router = useRouter();
-  const contactRef = useRef<HTMLAnchorElement>(null);
   const servicesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navItems = [
@@ -25,7 +24,7 @@ export default function Navbar() {
     { href: "/process", label: "Our Process" },
     { href: "/why-weave", label: "Why Weave" },
     { href: "/team", label: "Our Team" },
-    { href: "#contact", label: "Contact Us", isContact: true },
+    { href: "/contact", label: "Contact Us", isContact: true },
   ];
 
   const servicesDropdown = [
@@ -123,8 +122,7 @@ export default function Navbar() {
             {navItems.map((item) => (
               <Link
                 key={item.href}
-                href={item.isContact ? "#contact" : item.href}
-                onClick={item.isContact ? handleContactClick : undefined}
+                href={item.href}
                 className={`relative px-3 py-2 rounded-lg text-sm xl:text-base font-semibold transition-all duration-300 group whitespace-nowrap hover:bg-blue-50 ${
                   item.isContact
                     ? "text-blue-600 hover:text-blue-700 animate-pulse hover:animate-none"
@@ -327,7 +325,7 @@ export default function Navbar() {
                 className="overflow-hidden"
               >
                 <Link
-                  href={item.isContact ? "#contact" : item.href}
+                  href={item.href}
                   onClick={(e) => {
                     if (item.isContact) {
                       handleContactClick(e);

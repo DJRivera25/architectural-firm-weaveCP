@@ -171,3 +171,12 @@ export interface LeaveCredit {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ContactFormPayload {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export type ContactFormResponse = { success: true } | { error: string };

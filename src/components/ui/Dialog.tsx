@@ -7,6 +7,38 @@ type DialogProps = {
 };
 
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap
+  useEffect(() => {
+    if (!open) return;
+    const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    focusable?.[0]?.focus();
+    const handleTab = (e: KeyboardEvent) => {
+      if (!focusable || focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.key === "Tab") {
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", handleTab);
+    return () => window.removeEventListener("keydown", handleTab);
+  }, [open]);
+
+  // Escape key to close
   useEffect(() => {
     if (!open) return;
     const handle = (e: KeyboardEvent) => {
@@ -15,14 +47,24 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     window.addEventListener("keydown", handle);
     return () => window.removeEventListener("keydown", handle);
   }, [open, onOpenChange]);
+
   if (!open) return null;
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
       onClick={() => onOpenChange(false)}
+      // Optional: add a very light, blurred overlay for separation
+      style={{
+        background: "rgba(255,255,255,0.7)",
+        backdropFilter: "blur(8px)",
+      }}
     >
       <div
-        className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 relative"
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 relative outline-none"
         onClick={(e) => e.stopPropagation()}
         tabIndex={-1}
       >

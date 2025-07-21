@@ -1,5 +1,17 @@
 import api from "./axios";
-import { ContentData, JobData, TimeLogData, Task, Project, Leave, LeaveWithUser, Event, LeaveCredit } from "@/types";
+import {
+  ContentData,
+  JobData,
+  TimeLogData,
+  Task,
+  Project,
+  Leave,
+  LeaveWithUser,
+  Event,
+  LeaveCredit,
+  ContactFormPayload,
+  ContactFormResponse,
+} from "@/types";
 import { Notification, NotificationPayload } from "@/types/notification";
 import { IUser } from "@/models/User";
 import { ITeam } from "@/models/Team";
@@ -138,4 +150,4 @@ export async function getMyTeams() {
   return res.json();
 }
 
-export { api };
+export const sendContactForm = (payload: ContactFormPayload) => api.post<ContactFormResponse>("/contact", payload);

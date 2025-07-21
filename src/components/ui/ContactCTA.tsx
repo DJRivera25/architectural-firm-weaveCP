@@ -24,7 +24,7 @@ const defaultStats: ContactStat[] = [
 export default function ContactCTA({
   heading = "Ready to Start Your Project?",
   description = "Let's discuss your vision and create something extraordinary together. Our team is ready to bring your architectural dreams to life.",
-  cta1Text = "Get In Touch",
+  cta1Text = "Contact Us",
   cta1Link = "/contact",
   cta2Text = "Join Our Team",
   cta2Link = "/careers",

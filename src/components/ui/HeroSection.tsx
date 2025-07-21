@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { ContactModal } from "./ContactModal";
 
 export type HeroSectionProps = {
   beforeImage?: string;
@@ -22,12 +23,12 @@ export default function HeroSection({
   cta1Text = "View Our Work",
   cta1Link = "/portfolio",
   cta2Text = "Make Inquiry",
-  cta2Link = "/about",
 }: HeroSectionProps) {
   const [reveal, setReveal] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const requestRef = useRef<number | undefined>(undefined);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     let start: number | undefined;
@@ -56,51 +57,22 @@ export default function HeroSection({
   }, [direction]);
 
   return (
-    <section className="relative flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 overflow-hidden px-4 pt-4 sm:pt-4 md:pt-6 h-auto min-h-[60vh] max-h-screen">
-      {/* Weave symbol background image, 3/4 visible on right */}
-      {/* <div className="absolute top-0 right-150 h-full w-full pointer-events-none z-0">
-        <Image
-          src="/weave-symbol-white.png"
-          alt="Weave Symbol Background"
-          fill
-          className="object-contain object-right h-full w-full opacity-100 scale-250"
-          priority={false}
-          draggable={false}
-        />
-      </div> */}
-      <div className="relative z-10 text-center text-white px-2 sm:px-4 lg:px-8 max-w-lg sm:max-w-2xl lg:max-w-4xl mx-auto mb-4">
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-base sm:text-xl md:text-2xl text-blue-100 mb-1 sm:mb-2 max-w-2xl mx-auto"
-        >
-          {subheadline}
-        </motion.p>
-      </div>
-      <div className="relative w-full max-w-2xl sm:max-w-3xl md:max-w-5xl lg:max-w-7xl xl:max-w-[1200px] mx-auto aspect-[4/3] sm:aspect-[16/6] md:aspect-[16/5] lg:aspect-[16/4] xl:aspect-[16/3] rounded-xl overflow-hidden shadow-2xl min-h-[160px] sm:min-h-[180px] md:min-h-[240px] lg:min-h-[350px] xl:min-h-[500px] max-h-[50vh] mb-2">
-        <motion.div
-          initial={{ opacity: 0, scale: 1.08 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: "easeInOut" }}
-          viewport={{ once: true }}
-          className="absolute inset-0 w-full h-full"
-        >
+    <section className="relative w-full min-h-[60vh] max-h-screen flex items-center justify-center overflow-hidden px-0 md:px-4 py-0 md:py-6">
+      {/* Animated before/after image as moving background */}
+      <div className="absolute inset-0 w-full h-full -z-10 overflow-hidden">
+        <motion.div className="absolute inset-0 w-full h-full">
           <Image
             src={beforeImage}
             alt="Before: Site Plan"
             fill
-            className="absolute inset-0 w-full h-full object-cover object-center select-none"
-            draggable={false}
+            className="object-cover w-full h-full opacity-80 blur-xs"
+            style={{ objectPosition: "center" }}
             priority
-            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 90vw, 1600px"
+            draggable={false}
+            sizes="100vw"
           />
         </motion.div>
         <motion.div
-          initial={{ opacity: 0, scale: 1.08 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, delay: 0.2, ease: "easeInOut" }}
-          viewport={{ once: true }}
           className="absolute inset-0 w-full h-full"
           style={{
             clipPath: `inset(0 0 0 ${(1 - reveal) * 100}%)`,
@@ -111,54 +83,64 @@ export default function HeroSection({
             src={afterImage}
             alt="After: Rendered View"
             fill
-            className="absolute inset-0 w-full h-full object-cover object-center select-none"
-            draggable={false}
+            className="object-cover w-full h-full opacity-80 blur-xs"
+            style={{ objectPosition: "center" }}
             priority
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1600px"
+            draggable={false}
+            sizes="100vw"
           />
         </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-blue-900/40 to-indigo-900/50" />
       </div>
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.4 }}
-        className="flex flex-row gap-3 justify-center mt-4 w-full max-w-xs mx-auto"
-      >
-        <Link
-          href={cta1Link}
-          className="bg-white text-blue-900 px-3 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-blue-50 transition-colors duration-300 w-1/2 text-center whitespace-nowrap "
-        >
-          {cta1Text}
-        </Link>
-        <Link
-          href={cta2Link}
-          className="border-2 border-white text-white px-3 py-2 sm:px-6 sm:py-3 rounded-lg font-semibold text-sm sm:text-base hover:bg-white hover:text-blue-900 transition-colors duration-300 w-1/2 text-center whitespace-nowrap"
-        >
-          {cta2Text}
-        </Link>
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 0.8 }}
-        className="mx-auto mt-4 md:mb-4 flex justify-center items-center w-full"
-      >
-        <div className="animate-bounce">
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
+      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between h-full px-4 py-8 md:py-16">
+        {/* Right: Hero text and animation */}
+        <div className="flex-1 flex flex-col justify-center items-center md:items-end h-full w-full md:w-2/3 text-center md:text-right">
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1.1, ease: "easeOut" }}
+            className="w-full max-w-3xl mb-2"
+          >
+            <div className="uppercase text-white/80 text-xs sm:text-sm md:text-base font-light text-center md:text-right w-full font-mono tracking-[.35em] sm:tracking-[.45em] md:tracking-[.6em] whitespace-pre">
+              WE DONT OUTSOURCE WE SIDESOURCE
+            </div>
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0, x: 60 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+            className="text-2xl md:text-3xl font-extrabold text-white drop-shadow-lg mb-4 tracking-tight max-w-3xl text-center md:text-right"
+          >
+            {subheadline}
+          </motion.p>
+          {/* CTAs as premium text links with animated underlines */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-row gap-6 mt-2 w-full max-w-xs z-20 justify-center md:justify-end md:ml-auto"
+          >
+            <Link
+              href={cta1Link}
+              className="relative text-lg font-semibold text-white group cursor-pointer select-none px-0 py-0"
+            >
+              {cta1Text}
+              <span className="block h-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 w-full mt-1 transition-all duration-300 group-hover:h-1 group-hover:bg-yellow-500"></span>
+            </Link>
+            <button
+              type="button"
+              className="relative text-lg font-semibold text-blue-100 group cursor-pointer select-none px-0 py-0 border-none bg-transparent focus:outline-none"
+              onClick={() => setIsModalOpen(true)}
+            >
+              {cta2Text}
+              <span className="block h-0.5 bg-gradient-to-r from-blue-400 to-indigo-400 w-full mt-1 transition-all duration-300 group-hover:h-1 group-hover:bg-blue-400"></span>
+            </button>
+          </motion.div>
+          {/* No foreground image block, background is now animated */}
         </div>
-      </motion.div>
-      <motion.div
-        animate={{ y: [0, -20, 0] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full blur-xl"
-      />
-      <motion.div
-        animate={{ y: [0, 20, 0] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-20 right-10 w-32 h-32 bg-blue-300/20 rounded-full blur-xl"
-      />
+      </div>
+      {/* Contact Modal */}
+      <ContactModal open={isModalOpen} onOpenChange={setIsModalOpen} />
     </section>
   );
 }
