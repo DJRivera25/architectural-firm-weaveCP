@@ -74,7 +74,6 @@ export default function ContactPage() {
 
   return (
     <div className="flex flex-col min-h-screen ">
-      <Navbar />
       {/* Hero Section */}
       <section className="relative w-full h-[340px] md:h-[420px] flex items-center justify-center overflow-hidden">
         <Image

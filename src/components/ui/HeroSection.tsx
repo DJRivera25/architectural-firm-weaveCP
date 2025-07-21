@@ -21,7 +21,7 @@ export default function HeroSection({
   afterImage = "/After - Anilao Render.jpg",
   subheadline = "We are an architecture service outsourcing company that seamlessly translates design concepts into documentation.",
   cta1Text = "View Our Work",
-  cta1Link = "/portfolio",
+  cta1Link = "/services",
   cta2Text = "Make Inquiry",
 }: HeroSectionProps) {
   const [reveal, setReveal] = useState(0);
@@ -65,7 +65,7 @@ export default function HeroSection({
             src={beforeImage}
             alt="Before: Site Plan"
             fill
-            className="object-cover w-full h-full opacity-80 blur-xs"
+            className="object-cover w-full h-full opacity-80"
             style={{ objectPosition: "center" }}
             priority
             draggable={false}
@@ -83,7 +83,7 @@ export default function HeroSection({
             src={afterImage}
             alt="After: Rendered View"
             fill
-            className="object-cover w-full h-full opacity-80 blur-xs"
+            className="object-cover w-full h-full opacity-80 "
             style={{ objectPosition: "center" }}
             priority
             draggable={false}

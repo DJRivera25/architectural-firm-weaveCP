@@ -219,18 +219,13 @@ export default function Navbar() {
               <>
                 {session?.user?.role === "admin" && (
                   <Link
-                    href="/admin"
+                    href="/dashboard"
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg whitespace-nowrap"
                   >
                     Admin
                   </Link>
                 )}
-                <Link
-                  href="/dashboard"
-                  className="text-gray-700 hover:text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-gray-50 whitespace-nowrap"
-                >
-                  Dashboard
-                </Link>
+
                 <button
                   onClick={() => signOut()}
                   className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-red-50 whitespace-nowrap"
