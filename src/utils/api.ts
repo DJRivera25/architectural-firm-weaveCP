@@ -151,3 +151,13 @@ export async function getMyTeams() {
 }
 
 export const sendContactForm = (payload: ContactFormPayload) => api.post<ContactFormResponse>("/contact", payload);
+
+// --- Applications ---
+export const getApplications = (params?: string) => api.get(`/applications${params ? params : ""}`);
+export const getApplication = (id: string) => api.get(`/applications/${id}`);
+export const updateApplication = (id: string, data: { status?: string; notes?: string }) =>
+  api.patch(`/applications/${id}`, data);
+export const deleteApplication = (id: string) => api.delete(`/applications/${id}`);
+
+// Submit job application (public endpoint)
+export const submitApplication = (formData: FormData) => api.post("/applications", formData);

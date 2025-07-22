@@ -25,6 +25,7 @@ export interface ContentData {
 export interface JobData {
   _id?: string;
   title: string;
+  slug: string;
   description: string;
   requirements: string[];
   responsibilities: string[];

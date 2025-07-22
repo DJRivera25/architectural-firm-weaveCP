@@ -64,7 +64,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
     >
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 relative outline-none"
+        className=" max-w-7xl w-full p-6 relative "
         onClick={(e) => e.stopPropagation()}
         tabIndex={-1}
       >

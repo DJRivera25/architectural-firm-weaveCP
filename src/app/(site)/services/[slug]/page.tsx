@@ -2,8 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { services } from "@/data/services";
-import Navbar from "@/components/ui/Navbar";
-import Footer from "@/components/ui/Footer";
 import { Badge } from "@/components/ui/Badge";
 import Image from "next/image";
 import { motion } from "framer-motion";

@@ -6,24 +6,32 @@ import { useSession, signOut } from "next-auth/react";
 import { ExtendedSession } from "@/types";
 import Image from "next/image";
 import { Fragment, useRef } from "react";
-import { Menu, Transition } from "@headlessui/react";
+import { Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 export default function Navbar() {
   const { data: session } = useSession() as { data: ExtendedSession | null };
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const router = useRouter();
+
   const servicesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 1. Add new aboutDropdown array
+  const aboutDropdown = [
+    { label: "Who We Are", id: "aboutPreview" },
+    { label: "Why Weave?", id: "whyWeave" },
+    { label: "Our Team", id: "ourTeam" },
+  ];
+  // 2. Add state for About dropdown
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const aboutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navItems = [
     { href: "/", label: "Home" },
-    { href: "/about", label: "About Us" },
+    { href: "/", label: "About Us", isAbout: true },
     { href: "/process", label: "Our Process" },
-    { href: "/why-weave", label: "Why Weave" },
-    { href: "/team", label: "Our Team" },
+    { href: "/careers", label: "Careers" },
     { href: "/contact", label: "Contact Us", isContact: true },
   ];
 
@@ -37,17 +45,6 @@ export default function Navbar() {
     { href: "/services/sketch-to-detailed-drawing", label: "SKETCH TO DETAILED DRAWINGS" },
   ];
 
-  const handleContactClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (window.location.pathname === "/") {
-      const el = document.getElementById("contact");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push("/contact");
-    }
-    setIsMenuOpen(false);
-  };
-
   const handleServicesMouseEnter = () => {
     if (servicesTimeoutRef.current) {
       clearTimeout(servicesTimeoutRef.current);
@@ -59,6 +56,26 @@ export default function Navbar() {
     servicesTimeoutRef.current = setTimeout(() => {
       setIsServicesOpen(false);
     }, 300);
+  };
+
+  const handleAboutMouseEnter = () => {
+    if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
+    setIsAboutOpen(true);
+  };
+  const handleAboutMouseLeave = () => {
+    aboutTimeoutRef.current = setTimeout(() => setIsAboutOpen(false), 300);
+  };
+
+  const handleAboutScroll = (id: string, e?: React.MouseEvent) => {
+    if (typeof window !== "undefined" && window.location.pathname === "/") {
+      e?.preventDefault();
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    } else {
+      window.location.href = `/#${id}`;
+    }
+    setIsAboutOpen(false);
+    setIsMenuOpen(false);
   };
 
   return (
@@ -119,35 +136,106 @@ export default function Navbar() {
 
           {/* Center Nav */}
           <div className="hidden lg:flex flex-1 justify-center items-center space-x-1 xl:space-x-3">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative px-3 py-2 rounded-lg text-sm xl:text-base font-semibold transition-all duration-300 group whitespace-nowrap hover:bg-blue-50 ${
-                  item.isContact
-                    ? "text-blue-600 hover:text-blue-700 animate-pulse hover:animate-none"
-                    : "text-gray-700 hover:text-blue-700"
-                }`}
-              >
-                <span
-                  className={`relative transition-colors ${
-                    item.isContact ? "group-hover:text-blue-700" : "group-hover:text-blue-700"
+            {navItems.map((item) => {
+              if (item.isAbout) {
+                return (
+                  <div
+                    key="about-dropdown"
+                    className="relative inline-block text-left"
+                    onMouseEnter={handleAboutMouseEnter}
+                    onMouseLeave={handleAboutMouseLeave}
+                  >
+                    <button className="inline-flex items-center px-3 py-2 rounded-lg text-sm xl:text-base font-semibold text-gray-700 hover:text-blue-700 transition-all duration-300 group focus:outline-none whitespace-nowrap hover:bg-blue-50">
+                      <span className="relative group-hover:text-blue-700 transition-colors">
+                        About Us
+                        <span className="absolute left-0 -bottom-1 w-full h-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 rounded-full" />
+                      </span>
+                      <ChevronDownIcon
+                        className="ml-1 h-5 w-5 text-gray-500 group-hover:text-blue-700 transition-colors"
+                        aria-hidden="true"
+                      />
+                    </button>
+                    <Transition
+                      show={isAboutOpen}
+                      as={Fragment}
+                      enter="transition ease-out duration-300"
+                      enterFrom="transform opacity-0 scale-95 translate-y-2"
+                      enterTo="transform opacity-100 scale-100 translate-y-0"
+                      leave="transition ease-in duration-200"
+                      leaveFrom="transform opacity-100 scale-100 translate-y-0"
+                      leaveTo="transform opacity-0 scale-95 translate-y-2"
+                    >
+                      <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 w-72 origin-top-center rounded-2xl bg-gradient-to-br from-white via-gray-50/50 to-white shadow-2xl ring-1 ring-gray-200/50 focus:outline-none z-50 border border-gray-200/30 backdrop-blur-sm overflow-hidden">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-transparent to-indigo-50/30" />
+                          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-200/50 to-transparent" />
+                          <div className="relative py-4">
+                            <div className="space-y-1">
+                              {aboutDropdown.map((about, index) => (
+                                <button
+                                  key={about.id}
+                                  className="block w-full text-left px-6 py-3 text-sm font-semibold transition-all duration-300 group text-gray-700 hover:text-blue-700 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50"
+                                  style={{ animationDelay: `${index * 30}ms`, animationFillMode: "both" }}
+                                  onClick={(e) => handleAboutScroll(about.id, e)}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="truncate font-medium">{about.label}</span>
+                                    <svg
+                                      className="w-4 h-4 transition-all duration-300 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 5l7 7-7 7"
+                                      />
+                                    </svg>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </Transition>
+                  </div>
+                );
+              }
+
+              // Default nav link
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative px-3 py-2 rounded-lg text-sm xl:text-base font-semibold transition-all duration-300 group whitespace-nowrap hover:bg-blue-50 ${
+                    item.isContact
+                      ? "text-blue-600 hover:text-blue-700 animate-pulse hover:animate-none"
+                      : "text-gray-700 hover:text-blue-700"
                   }`}
                 >
-                  {item.label}
                   <span
-                    className={`absolute left-0 -bottom-1 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 rounded-full ${
-                      item.isContact
-                        ? "bg-gradient-to-r from-blue-500 to-indigo-500"
-                        : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                    className={`relative transition-colors ${
+                      item.isContact ? "group-hover:text-blue-700" : "group-hover:text-blue-700"
                     }`}
-                  />
-                  {item.isContact && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
-                  )}
-                </span>
-              </Link>
-            ))}
+                  >
+                    {item.label}
+                    <span
+                      className={`absolute left-0 -bottom-1 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 rounded-full ${
+                        item.isContact
+                          ? "bg-gradient-to-r from-blue-500 to-indigo-500"
+                          : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                      }`}
+                    />
+                    {item.isContact && (
+                      <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                    )}
+                  </span>
+                </Link>
+              );
+            })}
             {/* Dropdown for Services */}
             <div
               className="relative inline-block text-left"
@@ -293,60 +381,189 @@ export default function Navbar() {
 
           {/* Navigation Links with Scroll Animation */}
           <div className="p-4 space-y-1">
-            {navItems.map((item, index) => (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
-                animate={
-                  isMenuOpen
-                    ? { opacity: 1, y: 0, height: "auto", scale: 1 }
-                    : { opacity: 0, y: -15, height: 0, scale: 0.98 }
-                }
-                transition={{
-                  duration: 0.3,
-                  delay: index * 0.08,
-                  ease: "easeOut",
-                  height: {
-                    duration: 0.25,
-                    delay: index * 0.08,
-                    ease: "easeOut",
-                  },
-                  scale: {
-                    duration: 0.2,
-                    delay: index * 0.08,
-                    ease: "easeOut",
-                  },
-                }}
-                className="overflow-hidden"
-              >
-                <Link
-                  href={item.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={`block w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 group ${
-                    item.isContact
-                      ? "text-blue-600 hover:text-blue-700 hover:bg-blue-50/80 animate-pulse hover:animate-none"
-                      : "text-gray-700 hover:text-blue-700 hover:bg-gray-50/80"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="relative">
-                      {item.label}
-                      {item.isContact && (
-                        <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
-                      )}
-                    </span>
-                    <svg
-                      className="w-3 h-3 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+            {navItems.map((item, index) => {
+              if (item.isAbout) {
+                return (
+                  <motion.div
+                    key="about-mobile-dropdown"
+                    initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
+                    animate={
+                      isMenuOpen
+                        ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                        : { opacity: 0, y: -15, height: 0, scale: 0.98 }
+                    }
+                    transition={{
+                      duration: 0.3,
+                      delay: index * 0.08,
+                      ease: "easeOut",
+                      height: {
+                        duration: 0.25,
+                        delay: index * 0.08,
+                        ease: "easeOut",
+                      },
+                      scale: {
+                        duration: 0.2,
+                        delay: index * 0.08,
+                        ease: "easeOut",
+                      },
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border border-blue-100/50 flex items-center justify-between">
+                      <span>About Us</span>
+                      <ChevronDownIcon className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="ml-3 space-y-0.5">
+                      {aboutDropdown.map((about, idx) => (
+                        <motion.div
+                          key={about.id}
+                          initial={{ opacity: 0, y: -10, height: 0, scale: 0.98 }}
+                          animate={
+                            isMenuOpen
+                              ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                              : { opacity: 0, y: -10, height: 0, scale: 0.98 }
+                          }
+                          transition={{
+                            duration: 0.25,
+                            delay: (index + idx) * 0.06,
+                            ease: "easeOut",
+                            height: {
+                              duration: 0.2,
+                              delay: (index + idx) * 0.06,
+                              ease: "easeOut",
+                            },
+                            scale: {
+                              duration: 0.15,
+                              delay: (index + idx) * 0.06,
+                              ease: "easeOut",
+                            },
+                          }}
+                          className="overflow-hidden"
+                        >
+                          <button
+                            className="block w-full px-3 py-1.5 rounded-md text-xs font-medium text-gray-600 hover:text-blue-700 hover:bg-blue-50/60 transition-all duration-300 group text-left"
+                            onClick={(e) => handleAboutScroll(about.id, e)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="truncate">{about.label}</span>
+                              <svg
+                                className="w-2.5 h-2.5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </div>
+                          </button>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              }
+              if (item.label === "Careers") {
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
+                    animate={
+                      isMenuOpen
+                        ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                        : { opacity: 0, y: -15, height: 0, scale: 0.98 }
+                    }
+                    transition={{
+                      duration: 0.3,
+                      delay: index * 0.08,
+                      ease: "easeOut",
+                      height: {
+                        duration: 0.25,
+                        delay: index * 0.08,
+                        ease: "easeOut",
+                      },
+                      scale: {
+                        duration: 0.2,
+                        delay: index * 0.08,
+                        ease: "easeOut",
+                      },
+                    }}
+                    className="overflow-hidden"
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="block w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 group text-blue-600 hover:text-blue-700 hover:bg-blue-50/80"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                      <div className="flex items-center justify-between">
+                        <span className="relative">{item.label}</span>
+                        <svg
+                          className="w-3 h-3 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              }
+              return (
+                <motion.div
+                  key={item.href}
+                  initial={{ opacity: 0, y: -15, height: 0, scale: 0.98 }}
+                  animate={
+                    isMenuOpen
+                      ? { opacity: 1, y: 0, height: "auto", scale: 1 }
+                      : { opacity: 0, y: -15, height: 0, scale: 0.98 }
+                  }
+                  transition={{
+                    duration: 0.3,
+                    delay: index * 0.08,
+                    ease: "easeOut",
+                    height: {
+                      duration: 0.25,
+                      delay: index * 0.08,
+                      ease: "easeOut",
+                    },
+                    scale: {
+                      duration: 0.2,
+                      delay: index * 0.08,
+                      ease: "easeOut",
+                    },
+                  }}
+                  className="overflow-hidden"
+                >
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`block w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 group ${
+                      item.isContact
+                        ? "text-blue-600 hover:text-blue-700 hover:bg-blue-50/80 animate-pulse hover:animate-none"
+                        : "text-gray-700 hover:text-blue-700 hover:bg-gray-50/80"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="relative">
+                        {item.label}
+                        {item.isContact && (
+                          <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full animate-ping" />
+                        )}
+                      </span>
+                      <svg
+                        className="w-3 h-3 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all duration-300"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
 
             {/* Services Section with Sub-items */}
             <motion.div

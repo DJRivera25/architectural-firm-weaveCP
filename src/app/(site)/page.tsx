@@ -57,8 +57,12 @@ export default async function Home() {
       <main className="min-h-screen" id="main-content" aria-label="Main content">
         <section aria-labelledby="hero-heading">
           <HeroSection {...(hero as HeroSectionProps)} />
-          <AboutPreview {...(about as AboutPreviewProps)} />
-          <WhyWeave {...(whyWeave as WhyWeaveProps)} />
+          <div id="aboutPreview">
+            <AboutPreview {...(about as AboutPreviewProps)} />
+          </div>
+          <div id="whyWeave">
+            <WhyWeave {...(whyWeave as WhyWeaveProps)} />
+          </div>
         </section>
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>
           <section aria-labelledby="process-heading">
@@ -68,7 +72,9 @@ export default async function Home() {
         <AdvantageSection />
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>
           <section aria-labelledby="team-heading">
-            <OurTeam {...(team as OurTeamProps)} />
+            <div id="ourTeam">
+              <OurTeam {...(team as OurTeamProps)} />
+            </div>
           </section>
         </Suspense>
         <Suspense fallback={<div className="h-64 bg-gray-100 animate-pulse" />}>

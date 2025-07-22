@@ -7,6 +7,7 @@ export interface IApplication extends mongoose.Document {
   phone: string;
   resume: string;
   coverLetter: string;
+  portfolioLink?: string;
   status: "pending" | "reviewed" | "accepted" | "rejected";
   notes?: string;
   createdAt: Date;
@@ -43,6 +44,10 @@ const applicationSchema = new mongoose.Schema<IApplication>(
     coverLetter: {
       type: String,
       required: [true, "Cover letter is required"],
+    },
+    portfolioLink: {
+      type: String,
+      trim: true,
     },
     status: {
       type: String,

@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 
 const api = axios.create({
   baseURL: "/api",
-  headers: { "Content-Type": "application/json" },
+  // Removed default Content-Type header to allow Axios to set it per request
   withCredentials: true,
 });
 

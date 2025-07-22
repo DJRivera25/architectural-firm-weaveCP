@@ -11,12 +11,9 @@ import {
   TrashIcon,
   MapPinIcon,
   CurrencyDollarIcon,
-  ClockIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
   XCircleIcon,
-  DocumentTextIcon,
-  AcademicCapIcon,
   ArrowUpIcon,
   ArrowDownIcon,
 } from "@heroicons/react/24/outline";
@@ -24,6 +21,9 @@ import { getJobs, createJob, updateJob, deleteJob } from "@/utils/api";
 import { JobData } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
+import { JOB_TYPES } from "./constants";
+import JobForm, { JobFormValues } from "./JobForm";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
 
 interface JobStats {
   totalJobs: number;
@@ -35,33 +35,6 @@ interface JobStats {
   typeDistribution: { type: string; count: number; active: number }[];
   locationDistribution: { location: string; count: number }[];
 }
-
-const JOB_TYPES = [
-  {
-    value: "full-time",
-    label: "Full Time",
-    icon: <BriefcaseIcon className="w-5 h-5" />,
-    color: "bg-blue-100 text-blue-700 border-blue-200",
-  },
-  {
-    value: "part-time",
-    label: "Part Time",
-    icon: <ClockIcon className="w-5 h-5" />,
-    color: "bg-green-100 text-green-700 border-green-200",
-  },
-  {
-    value: "contract",
-    label: "Contract",
-    icon: <DocumentTextIcon className="w-5 h-5" />,
-    color: "bg-purple-100 text-purple-700 border-purple-200",
-  },
-  {
-    value: "internship",
-    label: "Internship",
-    icon: <AcademicCapIcon className="w-5 h-5" />,
-    color: "bg-orange-100 text-orange-700 border-orange-200",
-  },
-];
 
 export default function JobPostingsPage() {
   const [jobs, setJobs] = useState<JobData[]>([]);
@@ -81,6 +54,10 @@ export default function JobPostingsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [locationFilter, setLocationFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState("");
+  const [createSuccess, setCreateSuccess] = useState(false);
 
   useEffect(() => {
     fetchJobs();
@@ -164,6 +141,26 @@ export default function JobPostingsPage() {
 
   const getJobTypeInfo = (type: string) => {
     return JOB_TYPES.find((t) => t.value === type) || JOB_TYPES[0];
+  };
+
+  const handleCreateJob = async (values: JobFormValues) => {
+    setCreateLoading(true);
+    setCreateError("");
+    try {
+      await createJob({ ...values, type: values.type as "full-time" | "part-time" | "contract" | "internship" });
+      setCreateSuccess(true);
+      setShowCreateModal(false);
+      fetchJobs();
+    } catch (err) {
+      if (err && typeof err === "object" && "message" in err) {
+        setCreateError((err as { message?: string }).message || "Failed to create job");
+      } else {
+        setCreateError("Failed to create job");
+      }
+    } finally {
+      setCreateLoading(false);
+      setTimeout(() => setCreateSuccess(false), 2000);
+    }
   };
 
   const StatCard = ({
@@ -323,11 +320,27 @@ export default function JobPostingsPage() {
             <h1 className="text-3xl font-bold text-gray-900">Job Postings</h1>
             <p className="text-gray-600 mt-2">Manage career opportunities and job listings</p>
           </div>
-          <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+          <button
+            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+            onClick={() => setShowCreateModal(true)}
+          >
             <PlusIcon className="w-5 h-5 mr-2" />
             Create Job
           </button>
         </div>
+
+        {/* Create Job Modal */}
+        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+          <DialogContent>
+            <JobForm onSubmit={handleCreateJob} loading={createLoading} onCancel={() => setShowCreateModal(false)} />
+            {createError && <div className="text-red-600 text-sm mt-2">{createError}</div>}
+          </DialogContent>
+        </Dialog>
+        {createSuccess && (
+          <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow z-50">
+            Job created successfully!
+          </div>
+        )}
 
         {/* Stats Cards */}
         <AnimatePresence mode="wait">
