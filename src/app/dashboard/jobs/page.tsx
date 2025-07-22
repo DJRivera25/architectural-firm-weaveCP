@@ -147,7 +147,10 @@ export default function JobPostingsPage() {
     setCreateLoading(true);
     setCreateError("");
     try {
-      await createJob({ ...values, type: values.type as "full-time" | "part-time" | "contract" | "internship" });
+      await createJob({
+        ...values,
+        type: values.type as "full-time" | "part-time" | "contract" | "internship",
+      });
       setCreateSuccess(true);
       setShowCreateModal(false);
       fetchJobs();
