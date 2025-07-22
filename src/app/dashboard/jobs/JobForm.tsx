@@ -6,13 +6,9 @@ import React from "react";
 import Image from "next/image";
 
 // 1. Add imports for icons and close button
-import {
-  BriefcaseIcon,
-  MapPinIcon,
-  CurrencyDollarIcon,
-  ClipboardDocumentListIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { BriefcaseIcon, CurrencyDollarIcon, ClipboardDocumentListIcon, XMarkIcon } from "@heroicons/react/24/outline";
+
+import type { Job } from "@/types";
 
 type GradientButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
@@ -181,20 +177,21 @@ function FloatingLabelTextarea({
   );
 }
 
-export default function JobForm({
-  initialValues,
-  onSubmit,
-  loading,
-  onCancel,
-  onClose, // new prop for modal close (optional)
-}: {
-  initialValues?: JobFormValues;
-  onSubmit: (form: JobFormValues) => void;
-  loading: boolean;
+export interface JobFormProps {
+  mode: "add" | "edit" | "view";
+  initialValues?: Job;
+  onSubmit?: (form: Job) => void;
+  loading?: boolean;
   onCancel: () => void;
   onClose?: () => void;
-}) {
-  const [form, setForm] = useState<JobFormValues>({
+}
+
+export default function JobForm({ mode, initialValues, onSubmit, loading = false, onCancel, onClose }: JobFormProps) {
+  const isView = mode === "view";
+  const isEdit = mode === "edit";
+  const isAdd = mode === "add";
+  const [form, setForm] = useState<Job>({
+    _id: initialValues?._id || "",
     title: initialValues?.title || "",
     description: initialValues?.description || "",
     type: initialValues?.type || "full-time",
@@ -203,6 +200,8 @@ export default function JobForm({
     requirements: initialValues?.requirements || [""],
     responsibilities: initialValues?.responsibilities || [""],
     isActive: initialValues?.isActive ?? true,
+    createdAt: initialValues?.createdAt || "",
+    updatedAt: initialValues?.updatedAt || "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -228,7 +227,7 @@ export default function JobForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit(form);
+    onSubmit?.(form);
   };
 
   const handleTypeSelect = (value: string) => {
@@ -253,6 +252,15 @@ export default function JobForm({
     setErrors((prev) => ({ ...prev, [`${field}.${form[field].length}`]: "" })); // Clear error for new item
   };
 
+  const getTitle = () => {
+    if (isView) return "View Job";
+    if (isEdit) return "Edit Job";
+    return "Create Job";
+  };
+  const getSubmitLabel = () => {
+    if (isEdit) return "Save Changes";
+    return "Create Job";
+  };
   return (
     <form
       onSubmit={handleSubmit}
@@ -263,9 +271,7 @@ export default function JobForm({
       <div className="flex items-center justify-between px-6 pt-5 pb-2 border-b border-blue-100/60 bg-gradient-to-r from-blue-50/80 via-white/80 to-indigo-50/80 rounded-t-2xl">
         <div className="flex items-center gap-2">
           <BriefcaseIcon className="w-7 h-7 text-blue-700" />
-          <span className="text-lg md:text-xl font-bold tracking-tight text-blue-900 font-archivo">
-            Create Job Posting
-          </span>
+          <span className="text-lg md:text-xl font-bold tracking-tight text-blue-900 font-archivo">{getTitle()}</span>
         </div>
         <button
           type="button"
@@ -294,7 +300,7 @@ export default function JobForm({
               name="title"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              disabled={loading}
+              disabled={isView || loading}
               error={errors.title}
               helper="e.g. Senior Architect"
               maxLength={80}
@@ -342,7 +348,7 @@ export default function JobForm({
               name="location"
               value={form.location}
               onChange={(e) => setForm({ ...form, location: e.target.value })}
-              disabled={loading}
+              disabled={isView || loading}
               error={errors.location}
               helper="e.g. Makati City, PH"
               maxLength={80}
@@ -388,7 +394,7 @@ export default function JobForm({
                   min={0}
                   value={String(form.salary.min)}
                   onChange={(e) => setForm({ ...form, salary: { ...form.salary, min: Number(e.target.value) } })}
-                  disabled={loading}
+                  disabled={isView || loading}
                   placeholder="Min"
                   className="flex-1 min-w-[90px]"
                   label="Min"
@@ -400,7 +406,7 @@ export default function JobForm({
                   min={0}
                   value={String(form.salary.max)}
                   onChange={(e) => setForm({ ...form, salary: { ...form.salary, max: Number(e.target.value) } })}
-                  disabled={loading}
+                  disabled={isView || loading}
                   placeholder="Max"
                   className="flex-1 min-w-[90px]"
                   label="Max"
@@ -417,7 +423,7 @@ export default function JobForm({
             name="description"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            disabled={loading}
+            disabled={isView || loading}
             error={errors.description}
             helper="Describe the role, expectations, and company culture..."
             rows={4}
@@ -445,7 +451,7 @@ export default function JobForm({
                         type="button"
                         className="ml-2 text-blue-500 hover:text-red-500 focus:outline-none"
                         onClick={() => handleRemoveListItem("requirements", idx)}
-                        disabled={loading || form.requirements.length === 1}
+                        disabled={isView || loading || form.requirements.length === 1}
                       >
                         <XMarkIcon className="w-3 h-3" />
                       </button>
@@ -462,7 +468,7 @@ export default function JobForm({
                   updated[form.requirements.length - 1] = e.target.value;
                   setForm({ ...form, requirements: updated });
                 }}
-                disabled={loading}
+                disabled={isView || loading}
                 error={errors[`requirements.${form.requirements.length - 1}`]}
                 maxLength={100}
               />
@@ -470,7 +476,7 @@ export default function JobForm({
                 variant="outline"
                 type="button"
                 onClick={() => handleAddListItem("requirements")}
-                disabled={loading || !form.requirements[form.requirements.length - 1]}
+                disabled={isView || loading || !form.requirements[form.requirements.length - 1]}
               >
                 +
               </GradientButton>
@@ -495,7 +501,7 @@ export default function JobForm({
                         type="button"
                         className="ml-2 text-indigo-500 hover:text-red-500 focus:outline-none"
                         onClick={() => handleRemoveListItem("responsibilities", idx)}
-                        disabled={loading || form.responsibilities.length === 1}
+                        disabled={isView || loading || form.responsibilities.length === 1}
                       >
                         <XMarkIcon className="w-3 h-3" />
                       </button>
@@ -512,7 +518,7 @@ export default function JobForm({
                   updated[form.responsibilities.length - 1] = e.target.value;
                   setForm({ ...form, responsibilities: updated });
                 }}
-                disabled={loading}
+                disabled={isView || loading}
                 error={errors[`responsibilities.${form.responsibilities.length - 1}`]}
                 maxLength={100}
               />
@@ -520,7 +526,7 @@ export default function JobForm({
                 variant="outline"
                 type="button"
                 onClick={() => handleAddListItem("responsibilities")}
-                disabled={loading || !form.responsibilities[form.responsibilities.length - 1]}
+                disabled={isView || loading || !form.responsibilities[form.responsibilities.length - 1]}
               >
                 +
               </GradientButton>
@@ -534,7 +540,7 @@ export default function JobForm({
             name="isActive"
             checked={form.isActive}
             onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-            disabled={loading}
+            disabled={isView || loading}
             id="isActive"
             className="w-5 h-5 accent-blue-600 rounded focus:ring-2 focus:ring-blue-400"
           />
@@ -550,9 +556,11 @@ export default function JobForm({
             Cancel
           </GradientButton>
         )}
-        <GradientButton type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Job"}
-        </GradientButton>
+        {!isView && onSubmit && (
+          <GradientButton type="submit" disabled={loading}>
+            {loading ? (isEdit ? "Saving..." : "Creating...") : getSubmitLabel()}
+          </GradientButton>
+        )}
       </div>
     </form>
   );

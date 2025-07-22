@@ -90,12 +90,16 @@ export const deleteNotification = (id: string) => api.delete(`/notifications/${i
 
 // --- Projects ---
 export const getProjects = () => api.get<Project[]>("/projects");
+export const createProject = (data: Partial<Project>) => api.post<Project>("/projects", data);
+export const updateProject = (id: string, data: Partial<Project>) => api.patch<Project>(`/projects/${id}`, data);
+export const deleteProject = (id: string) => api.delete<{ success: boolean }>(`/projects/${id}`);
 
 // --- Tasks ---
 export const getTasks = (params?: string) => api.get<Task[]>(`/tasks${params ? params : ""}`);
 export const getTask = (id: string) => api.get<Task>(`/tasks/${id}`);
 export const createTask = (data: Partial<Task>) => api.post<Task>("/tasks", data);
 export const updateTask = (id: string, data: Partial<Task>) => api.patch<Task>(`/tasks/${id}`, data);
+export const deleteTask = (id: string) => api.delete<{ success: boolean }>(`/tasks/${id}`);
 export const getTaskComments = (id: string) => api.get(`/tasks/${id}/comments`);
 export const addTaskComment = (id: string, data: { text: string }) => api.post(`/tasks/${id}/comments`, data);
 

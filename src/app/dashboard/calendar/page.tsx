@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import Calendar from "@/components/ui/Calendar";
-import EventForm from "@/components/ui/EventForm";
+import EventFormModal from "./EventFormModal";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Event, LeaveWithUser } from "@/types";
 import {
@@ -23,6 +23,9 @@ export default function AdminCalendarPage() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedLeave, setSelectedLeave] = useState<LeaveWithUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialStartDate, setInitialStartDate] = useState<string | undefined>(undefined);
+  const [initialEndDate, setInitialEndDate] = useState<string | undefined>(undefined);
+  const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
 
   useEffect(() => {
     // Simulate fetch
@@ -40,14 +43,41 @@ export default function AdminCalendarPage() {
     setSelectedLeave(leave);
   };
 
+  // Helper to get local date string in YYYY-MM-DD
+  function toLocalDateString(date: Date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(
+      2,
+      "0"
+    )}`;
+  }
+
+  const handleDateClick = (date: Date) => {
+    setSelectedEvent(null);
+    setInitialStartDate(toLocalDateString(date));
+    setInitialEndDate(toLocalDateString(date));
+    setShowEventForm(true);
+  };
+
+  const handleDateRangeSelect = (start: Date, end: Date) => {
+    setSelectedEvent(null);
+    setInitialStartDate(toLocalDateString(start));
+    setInitialEndDate(toLocalDateString(end));
+    setShowEventForm(true);
+  };
+
   const handleEventFormSuccess = () => {
     setShowEventForm(false);
     setSelectedEvent(null);
+    setInitialStartDate(undefined);
+    setInitialEndDate(undefined);
+    setCalendarRefreshKey((k) => k + 1);
   };
 
   const handleEventFormCancel = () => {
     setShowEventForm(false);
     setSelectedEvent(null);
+    setInitialStartDate(undefined);
+    setInitialEndDate(undefined);
   };
 
   // Mock stats - in a real app, these would come from API
@@ -152,7 +182,13 @@ export default function AdminCalendarPage() {
             <h2 className="text-xl font-semibold text-gray-900">Calendar View</h2>
           </div>
 
-          <Calendar onEventClick={handleEventClick} onLeaveClick={handleLeaveClick} />
+          <Calendar
+            key={calendarRefreshKey}
+            onEventClick={handleEventClick}
+            onLeaveClick={handleLeaveClick}
+            onDateClick={handleDateClick}
+            onDateRangeSelect={handleDateRangeSelect}
+          />
         </div>
 
         {/* Event Form Modal */}
@@ -171,10 +207,13 @@ export default function AdminCalendarPage() {
                 </div>
               </div>
               <div className="p-6">
-                <EventForm
-                  event={selectedEvent || undefined}
+                <EventFormModal
+                  open={showEventForm}
+                  initialEvent={selectedEvent || undefined}
+                  initialStartDate={initialStartDate}
+                  initialEndDate={initialEndDate}
                   onSuccess={handleEventFormSuccess}
-                  onCancel={handleEventFormCancel}
+                  onClose={handleEventFormCancel}
                 />
               </div>
             </div>

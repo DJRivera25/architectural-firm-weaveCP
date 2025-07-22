@@ -21,32 +21,12 @@ import {
 } from "@heroicons/react/24/outline";
 import { getTeams, getUsers } from "@/utils/api";
 import mongoose, { Types } from "mongoose";
-import { IUser } from "@/models/User";
-import { ITeam } from "@/models/Team";
+import type { Team, User } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
-
-// Define plain frontend types for Team and User
-interface Team {
-  _id: string;
-  name: string;
-  description?: string;
-  members: string[];
-  manager?: User | string;
-  createdAt: string;
-  updatedAt: string;
-}
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role?: string;
-  isActive?: boolean;
-  image?: string;
-  position?: string;
-  team?: string;
-  createdAt?: string;
-}
+import TeamForm, { TeamFormMode, TeamFormValues } from "./TeamForm";
+import Swal from "sweetalert2";
+import { createTeam, updateTeam, deleteTeam } from "@/utils/api";
 
 interface TeamStats {
   totalTeams: number;
@@ -77,6 +57,10 @@ export default function TeamManager() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [teamFormOpen, setTeamFormOpen] = useState(false);
+  const [teamFormMode, setTeamFormMode] = useState<TeamFormMode>("add");
+  const [selectedTeam, setSelectedTeam] = useState<Team | undefined>(undefined);
+  const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -89,47 +73,53 @@ export default function TeamManager() {
       const teamsData = teamsRes.data || [];
       const usersData = usersRes.data || [];
 
-      // Use Team and User for state and mapping
+      // Map teams
       const mappedTeams: Team[] = teamsData.map((team: unknown) => {
-        const t = team as Partial<Team>;
+        if (typeof team === "object" && team && "_id" in team) {
+          return {
+            ...(team as Team),
+            _id: String((team as { _id: unknown })._id),
+            name: (team as { name?: string }).name ?? "",
+            createdAt: (team as { createdAt?: Date | string }).createdAt
+              ? String((team as { createdAt?: Date | string }).createdAt)
+              : "",
+            updatedAt: (team as { updatedAt?: Date | string }).updatedAt
+              ? String((team as { updatedAt?: Date | string }).updatedAt)
+              : "",
+          };
+        }
         return {
-          ...t,
-          _id: String(t._id),
-          manager:
-            t.manager && typeof t.manager === "object" && "_id" in t.manager
-              ? { ...(t.manager as User), _id: String((t.manager as User)._id) }
-              : t.manager,
-          members: Array.isArray(t.members)
-            ? t.members.map((m: unknown) => {
-                if (typeof m === "object" && m && "_id" in m && typeof (m as { _id: unknown })._id === "string") {
-                  return String((m as { _id: string })._id);
-                }
-                if (typeof m === "string") {
-                  return m;
-                }
-                return "";
-              })
-            : [],
-          name: t.name ?? "",
-          createdAt: t.createdAt ?? "",
-          updatedAt: t.updatedAt ?? "",
+          _id: "",
+          name: "",
+          members: [],
+          createdAt: "",
+          updatedAt: "",
         };
       });
+
+      // Map users
       const mappedUsers: User[] = usersData.map((user: unknown) => {
-        const u = user as Partial<User>;
+        if (typeof user === "object" && user && "_id" in user) {
+          return {
+            ...(user as User),
+            _id: String((user as { _id: unknown })._id),
+            name: (user as { name?: string }).name ?? "",
+            createdAt: (user as { createdAt?: Date | string }).createdAt
+              ? String((user as { createdAt?: Date | string }).createdAt)
+              : "",
+            updatedAt: (user as { updatedAt?: Date | string }).updatedAt
+              ? String((user as { updatedAt?: Date | string }).updatedAt)
+              : "",
+          };
+        }
         return {
-          ...u,
-          _id: String(u._id),
-          name: u.name ?? "",
-          email: u.email ?? "",
-          isActive: u.isActive === undefined ? false : u.isActive,
-          role: u.role ?? "",
-          image: u.image,
-          position: u.position ?? "",
-          team: u.team ?? "",
-          createdAt: u.createdAt ?? "",
+          _id: "",
+          name: "",
+          email: "",
+          createdAt: "",
         };
       });
+
       setTeams(mappedTeams);
       setUsers(mappedUsers);
       calculateStats(mappedTeams, mappedUsers);
@@ -227,6 +217,56 @@ export default function TeamManager() {
     </div>
   );
 
+  const openTeamForm = (mode: TeamFormMode, team?: Team) => {
+    setTeamFormMode(mode);
+    setSelectedTeam(team);
+    setTeamFormOpen(true);
+  };
+
+  const handleTeamFormSubmit = async (data: TeamFormValues) => {
+    setFormLoading(true);
+    try {
+      if (teamFormMode === "add") {
+        await createTeam({
+          name: data.name,
+          description: data.description,
+          members: data.members,
+          manager: data.manager,
+        });
+      } else if (teamFormMode === "edit" && selectedTeam) {
+        await updateTeam(selectedTeam._id, {
+          name: data.name,
+          description: data.description,
+          members: data.members,
+          manager: data.manager,
+        });
+      }
+      await fetchData();
+      setTeamFormOpen(false);
+    } catch (err) {
+      Swal.fire("Error", "Failed to save team. Please try again.", "error");
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const handleDeleteTeam = async (teamId: string) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This team will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      await deleteTeam(teamId);
+      fetchData();
+      Swal.fire("Deleted!", "The team has been deleted.", "success");
+    }
+  };
+
   const TeamCard = ({ team }: { team: Team }) => {
     const getManagerInfo = () => {
       if (team.manager && typeof team.manager === "object" && "name" in team.manager) {
@@ -298,15 +338,24 @@ export default function TeamManager() {
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="text-xs text-gray-500">Created: {new Date(team.createdAt).toLocaleDateString()}</div>
           <div className="flex items-center space-x-2">
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              onClick={() => openTeamForm("view", team)}
+            >
               <EyeIcon className="w-4 h-4 mr-1" />
               View
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              onClick={() => openTeamForm("edit", team)}
+            >
               <PencilIcon className="w-4 h-4 mr-1" />
               Edit
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+              onClick={() => handleDeleteTeam(team._id)}
+            >
               <TrashIcon className="w-4 h-4 mr-1" />
               Delete
             </button>
@@ -367,6 +416,27 @@ export default function TeamManager() {
 
   return (
     <DashboardLayout>
+      <TeamForm
+        open={teamFormOpen}
+        mode={teamFormMode}
+        initialValues={
+          selectedTeam
+            ? {
+                name: selectedTeam.name,
+                description: selectedTeam.description,
+                members: selectedTeam.members,
+                manager:
+                  typeof selectedTeam.manager === "object" && selectedTeam.manager
+                    ? selectedTeam.manager._id
+                    : selectedTeam.manager || "",
+              }
+            : { name: "", description: "", members: [], manager: "" }
+        }
+        onSubmit={handleTeamFormSubmit}
+        onCancel={() => setTeamFormOpen(false)}
+        users={users}
+        loading={formLoading}
+      />
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -375,7 +445,7 @@ export default function TeamManager() {
             <p className="text-gray-600 mt-2">Manage your teams and team members</p>
           </div>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => openTeamForm("add")}
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
             <PlusIcon className="w-5 h-5 mr-2" />

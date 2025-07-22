@@ -3,18 +3,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/Button";
 import { getEvents, getLeaves } from "@/utils/api";
-import { Event, LeaveWithUser } from "@/types";
+import type { Event, LeaveWithUser } from "@/types";
 
 interface CalendarProps {
   onEventClick?: (event: Event) => void;
   onLeaveClick?: (leave: LeaveWithUser) => void;
+  onDateClick?: (date: Date) => void;
+  onDateRangeSelect?: (start: Date, end: Date) => void;
 }
 
-export default function Calendar({ onEventClick, onLeaveClick }: CalendarProps) {
+export default function Calendar({ onEventClick, onLeaveClick, onDateClick, onDateRangeSelect }: CalendarProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const [leaves, setLeaves] = useState<LeaveWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedStartDate, setSelectedStartDate] = useState<Date | null>(null);
+  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
 
   const fetchData = async () => {
     try {
@@ -36,6 +40,14 @@ export default function Calendar({ onEventClick, onLeaveClick }: CalendarProps) 
     fetchData();
   }, []);
 
+  // Helper to compare only the date part (ignoring time)
+  function isSameOrBetweenDay(day: Date, start: Date, end: Date) {
+    const d = new Date(day.getFullYear(), day.getMonth(), day.getDate());
+    const s = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const e = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+    return d >= s && d <= e;
+  }
+
   const calendarData = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -52,16 +64,14 @@ export default function Calendar({ onEventClick, onLeaveClick }: CalendarProps) 
       const dayEvents = events.filter((event) => {
         const eventStart = new Date(event.startDate);
         const eventEnd = new Date(event.endDate);
-        const dayDate = new Date(current);
-        return dayDate >= eventStart && dayDate <= eventEnd;
+        return isSameOrBetweenDay(current, eventStart, eventEnd);
       });
 
       const dayLeaves = leaves.filter((leave) => {
         if (!leave.user || !leave.user.name) return false;
         const leaveStart = new Date(leave.startDate);
         const leaveEnd = new Date(leave.endDate);
-        const dayDate = new Date(current);
-        return dayDate >= leaveStart && dayDate <= leaveEnd;
+        return isSameOrBetweenDay(current, leaveStart, leaveEnd);
       });
 
       days.push({
@@ -146,6 +156,41 @@ export default function Calendar({ onEventClick, onLeaveClick }: CalendarProps) 
     });
   };
 
+  const handleDateClick = (date: Date) => {
+    if (!selectedStartDate) {
+      setSelectedStartDate(date);
+      setSelectedEndDate(null);
+      onDateClick?.(date);
+    } else if (!selectedEndDate) {
+      if (date < selectedStartDate) {
+        setSelectedEndDate(selectedStartDate);
+        setSelectedStartDate(date);
+        onDateRangeSelect?.(date, selectedStartDate);
+      } else if (date > selectedStartDate) {
+        setSelectedEndDate(date);
+        onDateRangeSelect?.(selectedStartDate, date);
+      } else {
+        // Same date clicked twice, treat as single date
+        setSelectedEndDate(null);
+        onDateClick?.(date);
+      }
+      // Reset after selection
+      setTimeout(() => {
+        setSelectedStartDate(null);
+        setSelectedEndDate(null);
+      }, 300);
+    }
+  };
+
+  const isDateSelected = (date: Date) => {
+    if (!selectedStartDate && !selectedEndDate) return false;
+    if (selectedStartDate && !selectedEndDate) return date.toDateString() === selectedStartDate.toDateString();
+    if (selectedStartDate && selectedEndDate) {
+      return date >= selectedStartDate && date <= selectedEndDate;
+    }
+    return false;
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -188,7 +233,9 @@ export default function Calendar({ onEventClick, onLeaveClick }: CalendarProps) 
               key={index}
               className={`min-h-[120px] p-2 border border-gray-200 ${!day.isCurrentMonth ? "bg-gray-50" : ""} ${
                 day.isToday ? "bg-blue-50 border-blue-300" : ""
-              }`}
+              } ${isDateSelected(day.date) ? "bg-yellow-100 border-yellow-400" : ""}`}
+              onClick={() => handleDateClick(day.date)}
+              style={{ cursor: "pointer" }}
             >
               <div
                 className={`text-sm font-medium mb-1 ${
@@ -197,24 +244,28 @@ export default function Calendar({ onEventClick, onLeaveClick }: CalendarProps) 
               >
                 {day.date.getDate()}
               </div>
-
               <div className="space-y-1">
                 {day.events.map((event, eventIndex) => (
                   <div
                     key={`event-${event._id}-${eventIndex}`}
                     className={`text-xs p-1 rounded cursor-pointer text-white ${getEventColor(event)}`}
-                    onClick={() => onEventClick?.(event)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEventClick?.(event);
+                    }}
                     title={event.title}
                   >
                     {event.title}
                   </div>
                 ))}
-
                 {day.leaves.map((leave, leaveIndex) => (
                   <div
                     key={`leave-${leave._id}-${leaveIndex}`}
                     className={`text-xs p-1 rounded cursor-pointer text-white ${getLeaveColor(leave)}`}
-                    onClick={() => onLeaveClick?.(leave)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onLeaveClick?.(leave);
+                    }}
                     title={`${leave.user?.name || "Unknown User"} - ${leave.leaveType}`}
                   >
                     {leave.user?.name || "Unknown User"} - {leave.leaveType}

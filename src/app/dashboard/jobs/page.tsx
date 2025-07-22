@@ -18,12 +18,13 @@ import {
   ArrowDownIcon,
 } from "@heroicons/react/24/outline";
 import { getJobs, createJob, updateJob, deleteJob } from "@/utils/api";
-import { JobData } from "@/types";
+import type { Job, JobData } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
 import { JOB_TYPES } from "./constants";
 import JobForm, { JobFormValues } from "./JobForm";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog";
+import Swal from "sweetalert2";
 
 interface JobStats {
   totalJobs: number;
@@ -37,7 +38,7 @@ interface JobStats {
 }
 
 export default function JobPostingsPage() {
-  const [jobs, setJobs] = useState<JobData[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [stats, setStats] = useState<JobStats>({
     totalJobs: 0,
     activeJobs: 0,
@@ -58,6 +59,9 @@ export default function JobPostingsPage() {
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState("");
   const [createSuccess, setCreateSuccess] = useState(false);
+  const [jobFormOpen, setJobFormOpen] = useState(false);
+  const [jobFormMode, setJobFormMode] = useState<"add" | "edit" | "view">("add");
+  const [selectedJob, setSelectedJob] = useState<Job | undefined>(undefined);
 
   useEffect(() => {
     fetchJobs();
@@ -68,8 +72,21 @@ export default function JobPostingsPage() {
       setLoading(true);
       const response = await getJobs();
       const jobsData = response.data || [];
-      setJobs(jobsData);
-      calculateStats(jobsData);
+      const jobs: Job[] = jobsData.map((job: JobData) => ({
+        _id: job._id || "",
+        title: job.title,
+        description: job.description,
+        type: job.type,
+        location: job.location,
+        salary: job.salary,
+        requirements: job.requirements,
+        responsibilities: job.responsibilities,
+        isActive: job.isActive,
+        createdAt: job.createdAt || "",
+        updatedAt: job.updatedAt || "",
+      }));
+      setJobs(jobs);
+      calculateStats(jobs);
     } catch (error) {
       console.error("Error fetching jobs:", error);
     } finally {
@@ -77,7 +94,7 @@ export default function JobPostingsPage() {
     }
   };
 
-  const calculateStats = (jobsData: JobData[]) => {
+  const calculateStats = (jobsData: Job[]) => {
     const totalJobs = jobsData.length;
     const activeJobs = jobsData.filter((job) => job.isActive).length;
     const inactiveJobs = jobsData.filter((job) => !job.isActive).length;
@@ -149,6 +166,9 @@ export default function JobPostingsPage() {
     try {
       await createJob({
         ...values,
+        _id: "",
+        createdAt: "",
+        updatedAt: "",
         type: values.type as "full-time" | "part-time" | "contract" | "internship",
       });
       setCreateSuccess(true);
@@ -164,6 +184,79 @@ export default function JobPostingsPage() {
       setCreateLoading(false);
       setTimeout(() => setCreateSuccess(false), 2000);
     }
+  };
+
+  const handleUpdateJob = async (jobId: string, values: JobFormValues) => {
+    setCreateLoading(true);
+    setCreateError("");
+    try {
+      await updateJob(jobId, {
+        ...values,
+        _id: jobId,
+        createdAt: "",
+        updatedAt: "",
+        type: values.type as "full-time" | "part-time" | "contract" | "internship",
+      });
+      setCreateSuccess(true);
+      setJobFormOpen(false);
+      fetchJobs();
+    } catch (err) {
+      if (err && typeof err === "object" && "message" in err) {
+        setCreateError((err as { message?: string }).message || "Failed to update job");
+      } else {
+        setCreateError("Failed to update job");
+      }
+    } finally {
+      setCreateLoading(false);
+      setTimeout(() => setCreateSuccess(false), 2000);
+    }
+  };
+
+  const handleDeleteJob = async (jobId: string) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This job will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      await deleteJob(jobId);
+      fetchJobs();
+      Swal.fire("Deleted!", "The job has been deleted.", "success");
+    }
+  };
+
+  const handleJobFormSubmit = async (values: JobFormValues) => {
+    if (jobFormMode === "add") {
+      await handleCreateJob(values);
+    } else if (jobFormMode === "edit" && selectedJob) {
+      await handleUpdateJob(selectedJob._id!, values);
+    }
+  };
+
+  const handleJobFormCancel = () => {
+    setJobFormOpen(false);
+  };
+
+  const handleJobFormView = (job: Job) => {
+    setSelectedJob(job);
+    setJobFormMode("view");
+    setJobFormOpen(true);
+  };
+
+  const handleJobFormEdit = (job: Job) => {
+    setSelectedJob(job);
+    setJobFormMode("edit");
+    setJobFormOpen(true);
+  };
+
+  const handleJobFormAdd = () => {
+    setSelectedJob(undefined);
+    setJobFormMode("add");
+    setJobFormOpen(true);
   };
 
   const StatCard = ({
@@ -201,7 +294,7 @@ export default function JobPostingsPage() {
     </div>
   );
 
-  const JobCard = ({ job }: { job: JobData }) => {
+  const JobCard = ({ job }: { job: Job }) => {
     const jobTypeInfo = getJobTypeInfo(job.type);
 
     return (
@@ -296,15 +389,24 @@ export default function JobPostingsPage() {
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="text-xs text-gray-500">Created: {new Date(job.createdAt || "").toLocaleDateString()}</div>
           <div className="flex items-center space-x-2">
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              onClick={() => handleJobFormView(job)}
+            >
               <EyeIcon className="w-4 h-4 mr-1" />
               View
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              onClick={() => handleJobFormEdit(job)}
+            >
               <PencilIcon className="w-4 h-4 mr-1" />
               Edit
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+              onClick={() => handleDeleteJob(job._id!)}
+            >
               <TrashIcon className="w-4 h-4 mr-1" />
               Delete
             </button>
@@ -312,6 +414,20 @@ export default function JobPostingsPage() {
         </div>
       </div>
     );
+  };
+
+  const emptyJob: Job = {
+    _id: "",
+    title: "",
+    description: "",
+    type: "",
+    location: "",
+    salary: { min: 0, max: 0, currency: "$" },
+    requirements: [""],
+    responsibilities: [""],
+    isActive: true,
+    createdAt: "",
+    updatedAt: "",
   };
 
   return (
@@ -325,7 +441,7 @@ export default function JobPostingsPage() {
           </div>
           <button
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleJobFormAdd}
           >
             <PlusIcon className="w-5 h-5 mr-2" />
             Create Job
@@ -335,7 +451,13 @@ export default function JobPostingsPage() {
         {/* Create Job Modal */}
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogContent>
-            <JobForm onSubmit={handleCreateJob} loading={createLoading} onCancel={() => setShowCreateModal(false)} />
+            <JobForm
+              mode="add"
+              initialValues={emptyJob}
+              onSubmit={handleCreateJob}
+              loading={createLoading}
+              onCancel={() => setShowCreateModal(false)}
+            />
             {createError && <div className="text-red-600 text-sm mt-2">{createError}</div>}
           </DialogContent>
         </Dialog>
@@ -562,6 +684,17 @@ export default function JobPostingsPage() {
           </AnimatePresence>
         </div>
       </div>
+      <Dialog open={jobFormOpen} onOpenChange={setJobFormOpen}>
+        <DialogContent>
+          <JobForm
+            mode={jobFormMode}
+            initialValues={selectedJob || emptyJob}
+            onSubmit={handleJobFormSubmit}
+            loading={createLoading}
+            onCancel={handleJobFormCancel}
+          />
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

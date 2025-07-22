@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 import { motion, useAnimation, useInView } from "framer-motion";
-
-export type TeamMember = { name: string; role: string; image: string };
+import type { TeamMember } from "@/types";
 
 export type OurTeamProps = {
   management?: TeamMember[];

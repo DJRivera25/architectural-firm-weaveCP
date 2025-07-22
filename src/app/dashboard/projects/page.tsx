@@ -21,25 +21,10 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
-
-interface Project {
-  _id: string;
-  name: string;
-  client?: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-  // Extended properties for better UX
-  status?: "active" | "completed" | "on-hold" | "cancelled";
-  progress?: number;
-  budget?: number;
-  startDate?: string;
-  endDate?: string;
-  teamSize?: number;
-  tasksCount?: number;
-  completedTasksCount?: number;
-}
+import ProjectForm from "./ProjectForm";
+import { deleteProject } from "@/utils/api";
+import Swal from "sweetalert2";
+import type { Project } from "@/types";
 
 interface ProjectStats {
   totalProjects: number;
@@ -68,10 +53,18 @@ export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string>("all");
-  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const [projectFormOpen, setProjectFormOpen] = useState(false);
+  const [projectFormMode, setProjectFormMode] = useState<"add" | "edit" | "view">("add");
+  const [selectedProject, setSelectedProject] = useState<Project | undefined>(undefined);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProjects();
+  }, []);
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleString());
   }, []);
 
   const fetchProjects = async () => {
@@ -79,31 +72,21 @@ export default function ProjectsPage() {
       const response = await fetch("/api/projects");
       const data = await response.json();
 
-      // Enhance projects with mock data for better UX (in real app, this would come from API)
-      const enhancedProjects = data.map((project: Project) => ({
-        ...project,
-        status: getRandomStatus(),
-        progress: Math.floor(Math.random() * 100),
-        budget: Math.floor(Math.random() * 50000) + 10000,
-        startDate: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
-        endDate: new Date(Date.now() + Math.random() * 180 * 24 * 60 * 60 * 1000).toISOString(),
-        teamSize: Math.floor(Math.random() * 8) + 1,
-        tasksCount: Math.floor(Math.random() * 20) + 5,
-        completedTasksCount: Math.floor(Math.random() * 15) + 1,
-      }));
-
-      setProjects(enhancedProjects);
-      calculateStats(enhancedProjects);
+      setProjects(
+        Array.isArray(data)
+          ? data.map((project) => ({
+              ...project,
+              createdAt: project.createdAt ? String(project.createdAt) : "",
+              updatedAt: project.updatedAt ? String(project.updatedAt) : "",
+            }))
+          : []
+      );
+      calculateStats(data);
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const getRandomStatus = () => {
-    const statuses = ["active", "completed", "on-hold", "cancelled"];
-    return statuses[Math.floor(Math.random() * statuses.length)];
   };
 
   const calculateStats = (projectData: Project[]) => {
@@ -114,13 +97,13 @@ export default function ProjectsPage() {
     const averageProgress =
       projectData.length > 0 ? projectData.reduce((sum, p) => sum + (p.progress || 0), 0) / projectData.length : 0;
     const recentProjects = projectData.filter((p) => {
-      const createdDate = new Date(p.createdAt);
+      const createdDate = new Date(p.createdAt || "");
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       return createdDate > thirtyDaysAgo;
     }).length;
     const overdueProjects = projectData.filter((p) => {
       if (!p.endDate || p.status === "completed") return false;
-      return new Date(p.endDate) < new Date();
+      return new Date(p.endDate || "") < new Date();
     }).length;
 
     setStats({
@@ -181,6 +164,29 @@ export default function ProjectsPage() {
       </div>
     </div>
   );
+
+  const openProjectForm = (mode: "add" | "edit" | "view", project?: Project) => {
+    setProjectFormMode(mode);
+    setSelectedProject(project);
+    setProjectFormOpen(true);
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This project will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      await deleteProject(projectId);
+      fetchProjects();
+      Swal.fire("Deleted!", "The project has been deleted.", "success");
+    }
+  };
 
   const ProjectCard = ({ project }: { project: Project }) => {
     const getStatusColor = (status: string) => {
@@ -286,23 +292,32 @@ export default function ProjectsPage() {
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <CalendarDaysIcon className="w-4 h-4 mr-2" />
-            <span>{project.endDate ? new Date(project.endDate).toLocaleDateString() : "No deadline"}</span>
+            <span>{project.endDate ? new Date(project.endDate || "").toLocaleDateString() : "No deadline"}</span>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="text-xs text-gray-500">Created: {new Date(project.createdAt).toLocaleDateString()}</div>
+          <div className="text-xs text-gray-500">Created: {new Date(project.createdAt || "").toLocaleDateString()}</div>
           <div className="flex items-center space-x-2">
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              onClick={() => openProjectForm("view", project)}
+            >
               <EyeIcon className="w-4 h-4 mr-1" />
               View
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              onClick={() => openProjectForm("edit", project)}
+            >
               <PencilIcon className="w-4 h-4 mr-1" />
               Edit
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+              onClick={() => handleDeleteProject(project._id)}
+            >
               <TrashIcon className="w-4 h-4 mr-1" />
               Delete
             </button>
@@ -322,7 +337,7 @@ export default function ProjectsPage() {
             <p className="text-gray-600 mt-2">Manage and track all your architectural projects</p>
           </div>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => openProjectForm("add")}
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
             <PlusIcon className="w-5 h-5 mr-2" />
@@ -448,7 +463,7 @@ export default function ProjectsPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-gray-900">Projects ({filteredProjects.length})</h2>
-            <div className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</div>
+            <div className="text-sm text-gray-500">Last updated: {lastUpdated ? lastUpdated : ""}</div>
           </div>
 
           <AnimatePresence mode="wait">
@@ -487,6 +502,14 @@ export default function ProjectsPage() {
             )}
           </AnimatePresence>
         </div>
+        {/* Project Create Modal */}
+        <ProjectForm
+          open={projectFormOpen}
+          mode={projectFormMode}
+          initialValues={selectedProject}
+          onClose={() => setProjectFormOpen(false)}
+          onSuccess={fetchProjects}
+        />
       </div>
     </DashboardLayout>
   );

@@ -1,4 +1,4 @@
-import { Project } from "@/types";
+import type { Project } from "@/types";
 
 interface ProjectNavProps {
   projects: Array<Project & { taskCount: number }>;

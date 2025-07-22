@@ -11,7 +11,7 @@ import {
   DragEndEvent,
 } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { TaskWithDetails, Project } from "@/types";
+import type { TaskWithDetails, Project } from "@/types";
 import { updateTask } from "@/utils/api";
 import toast from "react-hot-toast";
 import SortableTaskCard from "./SortableTaskCard";

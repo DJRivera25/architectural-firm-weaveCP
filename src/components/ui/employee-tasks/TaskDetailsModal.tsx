@@ -1,4 +1,4 @@
-import { TaskWithDetails } from "@/types";
+import type { TaskWithDetails } from "@/types";
 
 interface Comment {
   user: string | { _id: string; name: string };

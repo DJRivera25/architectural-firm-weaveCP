@@ -23,23 +23,14 @@ import {
   PauseIcon,
   PlayIcon,
 } from "@heroicons/react/24/outline";
-import { getTasks, getUsers, getProjects } from "@/utils/api";
-import { Task, User, Project } from "@/types";
+import { getTasks, getUsers, getProjects, createTask, updateTask, deleteTask } from "@/utils/api";
+import type { Task, User, Project } from "@/types";
+import type { IUser } from "@/models/User";
 import { Button } from "@/components/ui/Button";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
-
-interface TaskStats {
-  totalTasks: number;
-  completedTasks: number;
-  inProgressTasks: number;
-  overdueTasks: number;
-  completionRate: number;
-  averageCompletionTime: number;
-  tasksDueToday: number;
-  tasksDueThisWeek: number;
-  statusDistribution: { status: string; count: number }[];
-}
+import TaskForm, { TaskFormMode, TaskFormValues } from "./TaskForm";
+import Swal from "sweetalert2";
 
 export default function TasksPage() {
   const { data: session, status } = useSession();
@@ -47,7 +38,17 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [stats, setStats] = useState<TaskStats>({
+  const [stats, setStats] = useState<{
+    totalTasks: number;
+    completedTasks: number;
+    inProgressTasks: number;
+    overdueTasks: number;
+    completionRate: number;
+    averageCompletionTime: number;
+    tasksDueToday: number;
+    tasksDueThisWeek: number;
+    statusDistribution: { status: string; count: number }[];
+  }>({
     totalTasks: 0,
     completedTasks: 0,
     inProgressTasks: 0,
@@ -64,6 +65,10 @@ export default function TasksPage() {
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [taskFormOpen, setTaskFormOpen] = useState(false);
+  const [taskFormMode, setTaskFormMode] = useState<TaskFormMode>("add");
+  const [selectedTask, setSelectedTask] = useState<Task | undefined>(undefined);
+  const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -86,7 +91,15 @@ export default function TasksPage() {
       const projectsData = projectsRes.data || [];
 
       setTasks(tasksData);
-      setUsers(usersData);
+      setUsers(
+        usersData.map(
+          (user: IUser) =>
+            ({
+              ...user,
+              createdAt: user.createdAt ? String(user.createdAt) : "",
+            } as User)
+        )
+      );
       setProjects(projectsData);
       calculateStats(tasksData);
     } catch (error) {
@@ -213,6 +226,23 @@ export default function TasksPage() {
     return new Date(dueDate) < new Date();
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This task will be permanently deleted!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+    if (result.isConfirmed) {
+      await deleteTask(taskId);
+      fetchData();
+      Swal.fire("Deleted!", "The task has been deleted.", "success");
+    }
+  };
+
   const StatCard = ({
     title,
     value,
@@ -324,15 +354,24 @@ export default function TasksPage() {
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           <div className="text-xs text-gray-500">Created: {new Date(task.createdAt).toLocaleDateString()}</div>
           <div className="flex items-center space-x-2">
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+              onClick={() => openTaskForm("view", task)}
+            >
               <EyeIcon className="w-4 h-4 mr-1" />
               View
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              onClick={() => openTaskForm("edit", task)}
+            >
               <PencilIcon className="w-4 h-4 mr-1" />
               Edit
             </button>
-            <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-red-100 text-red-700 rounded-lg hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+              onClick={() => handleDeleteTask(task._id)}
+            >
               <TrashIcon className="w-4 h-4 mr-1" />
               Delete
             </button>
@@ -342,8 +381,43 @@ export default function TasksPage() {
     );
   };
 
+  // Handler for opening TaskForm
+  const openTaskForm = (mode: TaskFormMode, task?: Task) => {
+    setTaskFormMode(mode);
+    setSelectedTask(task);
+    setTaskFormOpen(true);
+  };
+
+  // Handler for submitting TaskForm
+  const handleTaskFormSubmit = async (data: TaskFormValues) => {
+    setFormLoading(true);
+    try {
+      if (taskFormMode === "add") {
+        await createTask(data);
+      } else if (taskFormMode === "edit" && selectedTask) {
+        await updateTask(selectedTask._id, data);
+      }
+      await fetchData();
+      setTaskFormOpen(false);
+    } catch (err) {
+      // Handle error (show toast, etc)
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   return (
     <DashboardLayout>
+      <TaskForm
+        open={taskFormOpen}
+        mode={taskFormMode}
+        initialValues={selectedTask}
+        onSubmit={handleTaskFormSubmit}
+        onClose={() => setTaskFormOpen(false)}
+        users={users}
+        projects={projects}
+        loading={formLoading}
+      />
       <div className="space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -355,7 +429,10 @@ export default function TasksPage() {
             <Button variant="primary" onClick={() => router.push("/dashboard/tasks/kanban")}>
               Kanban Board
             </Button>
-            <button className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+            <button
+              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              onClick={() => openTaskForm("add")}
+            >
               <PlusIcon className="w-5 h-5 mr-2" />
               Create Task
             </button>

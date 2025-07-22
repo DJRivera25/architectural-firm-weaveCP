@@ -1,4 +1,4 @@
-import { TaskWithDetails, Project } from "@/types";
+import type { TaskWithDetails, Project } from "@/types";
 
 interface TaskListProps {
   tasks: TaskWithDetails[];

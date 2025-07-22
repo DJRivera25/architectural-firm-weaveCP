@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
   const startDate = new Date(body.startDate);
   const endDate = new Date(body.endDate);
 
-  if (startDate >= endDate) {
-    return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
+  if (endDate < startDate) {
+    return NextResponse.json({ error: "End date cannot be before start date" }, { status: 400 });
   }
 
   const event = await Event.create({

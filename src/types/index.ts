@@ -69,6 +69,19 @@ export interface TimeLogData {
 export interface Project {
   _id: string;
   name: string;
+  client?: string;
+  description?: string;
+  status?: "active" | "completed" | "on-hold" | "cancelled";
+  budget?: number;
+  startDate?: string;
+  endDate?: string;
+  teamSize?: number;
+  tasksCount?: number;
+  completedTasksCount?: number;
+  progress?: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Task {
@@ -87,6 +100,13 @@ export interface Task {
 export interface User {
   _id: string;
   name: string;
+  email: string;
+  role?: string;
+  isActive?: boolean;
+  image?: string;
+  position?: string;
+  team?: string;
+  createdAt?: string;
 }
 
 export interface TaskWithDetails {
@@ -181,3 +201,75 @@ export interface ContactFormPayload {
 }
 
 export type ContactFormResponse = { success: true } | { error: string };
+
+export interface Team {
+  _id: string;
+  name: string;
+  description?: string;
+  members: string[];
+  manager?: string | User;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Job {
+  _id: string;
+  title: string;
+  description: string;
+  type: string;
+  location: string;
+  salary: { min: number; max: number; currency: string };
+  requirements: string[];
+  responsibilities: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimeLogWithDetails {
+  _id: string;
+  userId: string;
+  projectId?: string;
+  taskId?: string;
+  user?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  project?: {
+    _id: string;
+    name: string;
+  };
+  task?: {
+    _id: string;
+    name: string;
+  };
+  date: string;
+  timeIn?: string;
+  timeOut?: string;
+  notes?: string;
+  totalHours?: number;
+  regularHours?: number;
+  overtimeHours?: number;
+}
+
+export interface AnalyticsMetric {
+  title: string;
+  value: string | number;
+  change?: number;
+  changeType?: "increase" | "decrease";
+  icon: React.ReactNode;
+  color: string;
+  bgColor: string;
+}
+
+export type TeamMember = { name: string; role: string; image: string };
+
+// NOTE: All date fields in frontend types should be string (ISO format), not Date.
+// This matches API/JSON transport and avoids conversion bugs. Convert to Date only when needed in local logic.
+// Example: const date = new Date(user.createdAt);
+//
+// If you need a utility type for date fields:
+// type DateString = string; // for clarity
+//
+// export interface User { ... createdAt: DateString; ... }

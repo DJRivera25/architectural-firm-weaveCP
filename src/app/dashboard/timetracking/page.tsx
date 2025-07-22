@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { getTimeLogs, getUsers, getProjects, getTasks } from "@/utils/api";
 import { TimeLogData, Project, Task } from "@/types";
+import type { TimeLogWithDetails } from "@/types";
 import { IUser } from "@/models/User";
 import {
   ClockIcon,
@@ -17,26 +18,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
-interface TimeLogWithDetails extends TimeLogData {
-  _id: string;
-  userId: string;
-  projectId?: string;
-  taskId?: string;
-  user?: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  project?: {
-    _id: string;
-    name: string;
-  };
-  task?: {
-    _id: string;
-    name: string;
-  };
-}
-
+// If TimeLogWithDetails is shared, move to types/index.ts and import here.
 interface TimeStats {
   totalHours: number;
   regularHours: number;
@@ -82,9 +64,13 @@ export default function TimeTrackingPage() {
         userId: log.userId,
         projectId: log.projectId,
         taskId: log.taskId,
-        date: log.date,
-        timeIn: log.timeIn,
-        timeOut: log.timeOut,
+        date: typeof log.date === "string" ? log.date : log.date?.toISOString?.() ?? "",
+        timeIn: log.timeIn ? (typeof log.timeIn === "string" ? log.timeIn : log.timeIn.toISOString?.()) : undefined,
+        timeOut: log.timeOut
+          ? typeof log.timeOut === "string"
+            ? log.timeOut
+            : log.timeOut.toISOString?.()
+          : undefined,
         totalHours: log.totalHours,
         regularHours: log.regularHours,
         overtimeHours: log.overtimeHours,

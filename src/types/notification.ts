@@ -12,8 +12,11 @@ export interface Notification {
 }
 
 export interface NotificationPayload {
-  user: string;
+  subject: string;
   message: string;
   type?: NotificationType;
+  recipients?: string[];
+  project?: string;
+  team?: string;
   link?: string;
 }

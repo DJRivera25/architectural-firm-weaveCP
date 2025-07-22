@@ -10,15 +10,7 @@ import {
   ArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
-interface AnalyticsMetric {
-  title: string;
-  value: string | number;
-  change?: number;
-  changeType?: "increase" | "decrease";
-  icon: React.ReactNode;
-  color: string;
-  bgColor: string;
-}
+import { AnalyticsMetric } from "@/types";
 
 interface ChartData {
   labels: string[];
@@ -202,7 +194,7 @@ export default function AnalyticsDashboard({
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metrics.map((metric, index) => (
+        {metrics.map((metric: AnalyticsMetric, index: number) => (
           <MetricCard key={index} metric={metric} />
         ))}
       </div>
@@ -224,7 +216,19 @@ export default function AnalyticsDashboard({
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Recent Activities</h3>
             <div className="space-y-2">
               {recentActivities.length > 0 ? (
-                recentActivities.map((activity) => <ActivityItem key={activity.id} activity={activity} />)
+                recentActivities.map(
+                  (
+                    activity: {
+                      id: string;
+                      type: string;
+                      title: string;
+                      description: string;
+                      timestamp: string;
+                      status: string;
+                    },
+                    index: number
+                  ) => <ActivityItem key={activity.id} activity={activity} />
+                )
               ) : (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No recent activities</p>
@@ -240,22 +244,27 @@ export default function AnalyticsDashboard({
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => (
-              <button
-                key={index}
-                onClick={action.onClick}
-                className={`flex items-center p-4 ${action.bgColor} hover:opacity-80 rounded-lg transition-all`}
-              >
-                <div className={action.color}>{action.icon}</div>
-                <span
-                  className={`text-sm font-medium ml-3 ${action.color
-                    .replace("text-", "text-")
-                    .replace("-600", "-900")}`}
+            {quickActions.map(
+              (
+                action: { onClick: () => void; title: string; bgColor: string; color: string; icon: React.ReactNode },
+                index: number
+              ) => (
+                <button
+                  key={index}
+                  onClick={action.onClick}
+                  className={`flex items-center p-4 ${action.bgColor} hover:opacity-80 rounded-lg transition-all`}
                 >
-                  {action.title}
-                </span>
-              </button>
-            ))}
+                  <div className={action.color}>{action.icon}</div>
+                  <span
+                    className={`text-sm font-medium ml-3 ${action.color
+                      .replace("text-", "text-")
+                      .replace("-600", "-900")}`}
+                  >
+                    {action.title}
+                  </span>
+                </button>
+              )
+            )}
           </div>
         </div>
       )}
