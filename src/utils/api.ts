@@ -119,6 +119,9 @@ export const createEvent = (data: Omit<Event, "_id" | "createdBy" | "createdAt" 
 export const updateEvent = (id: string, data: Partial<Event>) => api.patch<Event>(`/events/${id}`, data);
 export const deleteEvent = (id: string) => api.delete(`/events/${id}`);
 
+// --- Employee Events ---
+export const getEmployeeEvents = () => api.get<Event[]>("/events?employeeOnly=true");
+
 // --- Leave Credits ---
 export const getLeaveCredits = (params?: string) => api.get<LeaveCredit[]>(`/leave-credits${params ? params : ""}`);
 export const createLeaveCredit = (data: Omit<LeaveCredit, "_id" | "createdAt" | "updatedAt">) =>

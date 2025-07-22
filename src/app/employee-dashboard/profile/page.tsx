@@ -33,7 +33,7 @@ export default function EmployeeProfilePage() {
           <div className="relative bg-white/90 rounded-3xl shadow-2xl border border-blue-100/70 px-8 py-12 flex flex-col items-center text-center transition-all duration-300 hover:shadow-blue-200/80 hover:scale-[1.02]">
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full shadow-xl border-4 border-blue-200 bg-gradient-to-br from-blue-100/60 via-white/80 to-indigo-100/60 flex items-center justify-center overflow-hidden">
               <Image
-                src={userData?.image || "/weave-hsymbol-tri.svg"}
+                src={userData?.image || "/weave-symbol-tri.svg"}
                 alt={userData?.name || "Profile"}
                 fill
                 className="object-cover rounded-full"

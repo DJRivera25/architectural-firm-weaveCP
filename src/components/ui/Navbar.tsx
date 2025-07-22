@@ -314,6 +314,15 @@ export default function Navbar() {
                   </Link>
                 )}
 
+                {session?.user?.role === "employee" && (
+                  <Link
+                    href="/employee-dashboard"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg whitespace-nowrap"
+                  >
+                    Employee
+                  </Link>
+                )}
+
                 <button
                   onClick={() => signOut()}
                   className="text-gray-700 hover:text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-red-50 whitespace-nowrap"

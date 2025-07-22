@@ -17,24 +17,30 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
+import { getEvents } from "@/utils/api";
+
+type ParsedEvent = Omit<Event, "startDate" | "endDate"> & { startDate: Date; endDate: Date };
 
 export default function AdminCalendarPage() {
   const [showEventForm, setShowEventForm] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<ParsedEvent | null>(null);
   const [selectedLeave, setSelectedLeave] = useState<LeaveWithUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [initialStartDate, setInitialStartDate] = useState<string | undefined>(undefined);
   const [initialEndDate, setInitialEndDate] = useState<string | undefined>(undefined);
   const [calendarRefreshKey, setCalendarRefreshKey] = useState(0);
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
-    // Simulate fetch
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
+    setLoading(true);
+    getEvents()
+      .then((res) => {
+        setEvents(res.data || []);
+      })
+      .finally(() => setLoading(false));
+  }, [calendarRefreshKey]);
 
-  const handleEventClick = (event: Event) => {
+  const handleEventClick = (event: ParsedEvent) => {
     setSelectedEvent(event);
     setShowEventForm(true);
   };
@@ -184,6 +190,11 @@ export default function AdminCalendarPage() {
 
           <Calendar
             key={calendarRefreshKey}
+            events={events.map((event) => ({
+              ...event,
+              startDate: new Date(event.startDate),
+              endDate: new Date(event.endDate),
+            }))}
             onEventClick={handleEventClick}
             onLeaveClick={handleLeaveClick}
             onDateClick={handleDateClick}
@@ -209,7 +220,7 @@ export default function AdminCalendarPage() {
               <div className="p-6">
                 <EventFormModal
                   open={showEventForm}
-                  initialEvent={selectedEvent || undefined}
+                  initialEvent={(selectedEvent as unknown as Event) || undefined}
                   initialStartDate={initialStartDate}
                   initialEndDate={initialEndDate}
                   onSuccess={handleEventFormSuccess}

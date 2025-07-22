@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import Calendar from "@/components/ui/Calendar";
-import EventForm from "@/components/ui/EventForm";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { getEmployeeEvents } from "@/utils/api";
 import EmployeeDashboardLayout from "@/components/layout/EmployeeDashboardLayout";
 import { Event, LeaveWithUser } from "@/types";
+
+type ParsedEvent = Omit<Event, "startDate" | "endDate"> & { startDate: Date; endDate: Date };
 import {
   CalendarIcon,
-  PlusIcon,
   UserGroupIcon,
   ClockIcon,
   CheckCircleIcon,
@@ -17,30 +20,42 @@ import {
 } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
+import EventDetailsModal from "./EventDetailsModal";
 
 export default function EmployeeCalendarPage() {
-  const [showEventForm, setShowEventForm] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const { data: session } = useSession();
   const [selectedLeave, setSelectedLeave] = useState<LeaveWithUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<ParsedEvent | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [parsedEvents, setParsedEvents] = useState<ParsedEvent[]>([]);
 
-  const handleEventClick = (event: Event) => {
-    setSelectedEvent(event);
-    setShowEventForm(true);
-  };
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    setLoading(true);
+    getEmployeeEvents()
+      .then((res) => {
+        setEvents(res.data || []);
+      })
+      .finally(() => setLoading(false));
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    // Convert startDate and endDate to Date objects for Calendar
+    setParsedEvents(
+      events.map((event) => ({
+        ...event,
+        startDate: new Date(event.startDate),
+        endDate: new Date(event.endDate),
+      }))
+    );
+  }, [events]);
+
+  // Employees can only view events, not create/edit
+  // Optionally, you can show a modal with event details if desired
 
   const handleLeaveClick = (leave: LeaveWithUser) => {
     setSelectedLeave(leave);
-  };
-
-  const handleEventFormSuccess = () => {
-    setShowEventForm(false);
-    setSelectedEvent(null);
-  };
-
-  const handleEventFormCancel = () => {
-    setShowEventForm(false);
-    setSelectedEvent(null);
   };
 
   // Mock stats - in a real app, these would come from API
@@ -59,12 +74,6 @@ export default function EmployeeCalendarPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">My Calendar</h1>
             <p className="text-gray-600 mt-2">View and manage your schedule, events, and leave requests</p>
-          </div>
-          <div className="mt-4 sm:mt-0">
-            <Button onClick={() => setShowEventForm(true)} className="bg-blue-600 hover:bg-blue-700 flex items-center">
-              <PlusIcon className="w-4 h-4 mr-2" />
-              Add Event
-            </Button>
           </div>
         </div>
 
@@ -147,34 +156,12 @@ export default function EmployeeCalendarPage() {
             <h2 className="text-xl font-semibold text-gray-900">Calendar View</h2>
           </div>
 
-          <Calendar onEventClick={handleEventClick} onLeaveClick={handleLeaveClick} />
+          <Calendar
+            events={parsedEvents}
+            onLeaveClick={handleLeaveClick}
+            onEventClick={(event) => setSelectedEvent(event)}
+          />
         </div>
-
-        {/* Event Form Modal */}
-        {showEventForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-gray-900 flex items-center">
-                    <PlusIcon className="w-5 h-5 mr-2" />
-                    {selectedEvent ? "Edit Event" : "Create Event"}
-                  </h2>
-                  <Button variant="ghost" size="sm" onClick={handleEventFormCancel}>
-                    ✕
-                  </Button>
-                </div>
-              </div>
-              <div className="p-6">
-                <EventForm
-                  event={selectedEvent || undefined}
-                  onSuccess={handleEventFormSuccess}
-                  onCancel={handleEventFormCancel}
-                />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Leave Details Modal */}
         {selectedLeave && (
@@ -275,6 +262,11 @@ export default function EmployeeCalendarPage() {
             </div>
           </div>
         )}
+        <EventDetailsModal
+          open={!!selectedEvent}
+          event={selectedEvent as unknown as Event}
+          onClose={() => setSelectedEvent(null)}
+        />
       </div>
     </EmployeeDashboardLayout>
   );

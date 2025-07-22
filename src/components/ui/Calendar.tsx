@@ -5,40 +5,46 @@ import { Button } from "@/components/ui/Button";
 import { getEvents, getLeaves } from "@/utils/api";
 import type { Event, LeaveWithUser } from "@/types";
 
+type ParsedEvent = Omit<Event, "startDate" | "endDate"> & { startDate: Date; endDate: Date };
+
 interface CalendarProps {
-  onEventClick?: (event: Event) => void;
+  events?: ParsedEvent[];
+  onEventClick?: (event: ParsedEvent) => void;
   onLeaveClick?: (leave: LeaveWithUser) => void;
   onDateClick?: (date: Date) => void;
   onDateRangeSelect?: (start: Date, end: Date) => void;
 }
 
-export default function Calendar({ onEventClick, onLeaveClick, onDateClick, onDateRangeSelect }: CalendarProps) {
-  const [events, setEvents] = useState<Event[]>([]);
+export default function Calendar({
+  events: propEvents,
+  onEventClick,
+  onLeaveClick,
+  onDateClick,
+  onDateRangeSelect,
+}: CalendarProps) {
   const [leaves, setLeaves] = useState<LeaveWithUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!propEvents);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedStartDate, setSelectedStartDate] = useState<Date | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
 
-  const fetchData = async () => {
-    try {
-      const [eventsRes, leavesRes] = await Promise.all([getEvents(), getLeaves()]);
-      setEvents(eventsRes.data || []);
-      // Filter out leaves without user data to prevent errors
-      const validLeaves = (leavesRes.data || []).filter((leave) => leave.user && leave.user.name);
-      setLeaves(validLeaves);
-    } catch (error) {
-      console.error("Error fetching calendar data:", error);
-      setEvents([]);
-      setLeaves([]);
-    } finally {
+  useEffect(() => {
+    if (!propEvents) {
+      setIsLoading(true);
+      Promise.all([getEvents(), getLeaves()])
+        .then(([eventsRes, leavesRes]) => {
+          // Filter out leaves without user data to prevent errors
+          const validLeaves = (leavesRes.data || []).filter((leave) => leave.user && leave.user.name);
+          setLeaves(validLeaves);
+        })
+        .catch(() => setLeaves([]))
+        .finally(() => setIsLoading(false));
+    } else {
       setIsLoading(false);
     }
-  };
+  }, [propEvents]);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const events: ParsedEvent[] = propEvents || [];
 
   // Helper to compare only the date part (ignoring time)
   function isSameOrBetweenDay(day: Date, start: Date, end: Date) {
@@ -56,15 +62,20 @@ export default function Calendar({ onEventClick, onLeaveClick, onDateClick, onDa
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
 
-    const days = [];
+    const days: Array<{
+      date: Date;
+      dateStr: string;
+      events: ParsedEvent[];
+      leaves: LeaveWithUser[];
+      isCurrentMonth: boolean;
+      isToday: boolean;
+    }> = [];
     const current = new Date(startDate);
 
     while (current <= lastDay || current.getDay() !== 0) {
       const dateStr = current.toISOString().split("T")[0];
-      const dayEvents = events.filter((event) => {
-        const eventStart = new Date(event.startDate);
-        const eventEnd = new Date(event.endDate);
-        return isSameOrBetweenDay(current, eventStart, eventEnd);
+      const dayEvents: ParsedEvent[] = events.filter((event) => {
+        return isSameOrBetweenDay(current, event.startDate, event.endDate);
       });
 
       const dayLeaves = leaves.filter((leave) => {
@@ -106,7 +117,7 @@ export default function Calendar({ onEventClick, onLeaveClick, onDateClick, onDa
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const getEventColor = (event: Event) => {
+  const getEventColor = (event: ParsedEvent) => {
     switch (event.type) {
       case "meeting":
         return "bg-blue-500";
@@ -245,7 +256,7 @@ export default function Calendar({ onEventClick, onLeaveClick, onDateClick, onDa
                 {day.date.getDate()}
               </div>
               <div className="space-y-1">
-                {day.events.map((event, eventIndex) => (
+                {day.events.map((event: ParsedEvent, eventIndex) => (
                   <div
                     key={`event-${event._id}-${eventIndex}`}
                     className={`text-xs p-1 rounded cursor-pointer text-white ${getEventColor(event)}`}
@@ -274,27 +285,6 @@ export default function Calendar({ onEventClick, onLeaveClick, onDateClick, onDa
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      <div className="p-6 border-t border-gray-200">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-blue-500 rounded"></div>
-            <span>Meetings</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-red-500 rounded"></div>
-            <span>Deadlines</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded"></div>
-            <span>Holidays</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-purple-500 rounded"></div>
-            <span>Leave</span>
-          </div>
         </div>
       </div>
     </div>
