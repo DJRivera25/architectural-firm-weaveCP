@@ -71,10 +71,28 @@ export default function AdminKanbanPage() {
         interface IUser {
           _id: string | { toString: () => string };
           name?: string;
+          email?: string;
+          role?: string;
+          isActive?: boolean;
+          image?: string;
+          position?: string;
+          team?: string;
+          createdAt?: string;
         }
-        const mappedUsers: User[] = (usersRes.data as IUser[]).map((u) => ({
+        const mappedUsers: User[] = (usersRes.data as unknown as IUser[]).map((u) => ({
           _id: typeof u._id === "string" ? u._id : u._id?.toString?.() ?? "",
           name: u.name ?? "",
+          email: u.email ?? "",
+          role: u.role,
+          isActive: u.isActive,
+          image: u.image,
+          position: u.position,
+          team: u.team,
+          createdAt: u.createdAt
+            ? typeof u.createdAt === "string"
+              ? u.createdAt
+              : (u.createdAt as Date).toISOString()
+            : undefined,
         }));
         setUsers(mappedUsers);
       } catch (error) {
