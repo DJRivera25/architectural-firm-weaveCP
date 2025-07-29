@@ -18,6 +18,23 @@ import {
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import LoadingSkeleton from "@/components/ui/LoadingSkeleton";
+
+// Interface for the populated API response
+interface PopulatedTimeLog {
+  _id: string;
+  userId: { _id: string; name: string; email: string; image?: string } | string;
+  projectId: { _id: string; name: string } | string;
+  taskId?: { _id: string; name: string } | string;
+  description: string;
+  startTime: string | Date;
+  endTime?: string | Date;
+  duration: number;
+  status: "running" | "paused" | "stopped";
+  isActive: boolean;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+}
+
 // If TimeLogWithDetails is shared, move to types/index.ts and import here.
 interface TimeStats {
   totalHours: number;
@@ -58,28 +75,53 @@ export default function TimeTrackingPage() {
       ]);
 
       // Map time logs with user, project, and task details
-      type TimeLogApiResponse = TimeLogData & { _id: string; projectId?: string; taskId?: string };
-      const mappedTimeLogs: TimeLogWithDetails[] = (timeLogsRes.data as unknown as TimeLogApiResponse[]).map((log) => ({
-        _id: log._id,
-        userId: log.userId,
-        projectId: log.projectId,
-        taskId: log.taskId,
-        date: typeof log.date === "string" ? log.date : log.date?.toISOString?.() ?? "",
-        timeIn: log.timeIn ? (typeof log.timeIn === "string" ? log.timeIn : log.timeIn.toISOString?.()) : undefined,
-        timeOut: log.timeOut
-          ? typeof log.timeOut === "string"
-            ? log.timeOut
-            : log.timeOut.toISOString?.()
-          : undefined,
-        totalHours: log.totalHours,
-        regularHours: log.regularHours,
-        overtimeHours: log.overtimeHours,
-        overtimeReason: log.overtimeReason,
-        notes: log.notes,
-        user: usersRes.data.find((u: IUser) => u._id === log.userId),
-        project: projectsRes.data.find((p: Project) => p._id === log.projectId),
-        task: tasksRes.data.find((t: Task) => t._id === log.taskId),
-      }));
+      const mappedTimeLogs: TimeLogWithDetails[] = (timeLogsRes.data as PopulatedTimeLog[]).map(
+        (log: PopulatedTimeLog) => ({
+          _id: log._id || "",
+          userId: typeof log.userId === "object" ? log.userId._id : log.userId,
+          projectId: typeof log.projectId === "object" ? log.projectId._id : log.projectId,
+          taskId: log.taskId ? (typeof log.taskId === "object" ? log.taskId._id : log.taskId) : undefined,
+          description: log.description,
+          startTime: new Date(log.startTime),
+          endTime: log.endTime ? new Date(log.endTime) : undefined,
+          duration: log.duration,
+          status: log.status,
+          isActive: log.isActive,
+          user: {
+            _id: typeof log.userId === "object" ? log.userId._id : log.userId,
+            name: typeof log.userId === "object" ? log.userId.name : "Unknown User",
+            email: typeof log.userId === "object" ? log.userId.email : "",
+            image: typeof log.userId === "object" ? log.userId.image : undefined,
+          },
+          project: projectsRes.data.find(
+            (p: Project) => p._id === (typeof log.projectId === "object" ? log.projectId._id : log.projectId)
+          )
+            ? {
+                _id: typeof log.projectId === "object" ? log.projectId._id : log.projectId,
+                name:
+                  projectsRes.data.find(
+                    (p: Project) => p._id === (typeof log.projectId === "object" ? log.projectId._id : log.projectId)
+                  )?.name || "Unknown Project",
+              }
+            : undefined,
+          task: tasksRes.data.find(
+            (t: Task) =>
+              t._id === (log.taskId ? (typeof log.taskId === "object" ? log.taskId._id : log.taskId) : undefined)
+          )
+            ? {
+                _id: log.taskId ? (typeof log.taskId === "object" ? log.taskId._id : log.taskId) : "",
+                name:
+                  tasksRes.data.find(
+                    (t: Task) =>
+                      t._id ===
+                      (log.taskId ? (typeof log.taskId === "object" ? log.taskId._id : log.taskId) : undefined)
+                  )?.name || "Unknown Task",
+              }
+            : undefined,
+          createdAt: new Date(log.createdAt),
+          updatedAt: new Date(log.updatedAt),
+        })
+      );
 
       setTimeLogs(mappedTimeLogs);
       setUsers(usersRes.data);
@@ -124,7 +166,7 @@ export default function TimeTrackingPage() {
     };
 
     const { start } = getDateRange();
-    filtered = filtered.filter((log) => new Date(log.date) >= start);
+    filtered = filtered.filter((log) => new Date(log.startTime) >= start);
 
     // Filter by search term
     if (searchTerm) {
@@ -133,7 +175,7 @@ export default function TimeTrackingPage() {
           log.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           log.project?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           log.task?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          log.notes?.toLowerCase().includes(searchTerm.toLowerCase())
+          log.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -142,16 +184,17 @@ export default function TimeTrackingPage() {
       let comparison = 0;
       switch (sortBy) {
         case "date":
-          comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+          comparison = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
           break;
         case "user":
           comparison = (a.user?.name || "").localeCompare(b.user?.name || "");
           break;
         case "hours":
-          comparison = (a.totalHours || 0) - (b.totalHours || 0);
+          comparison = (a.duration || 0) - (b.duration || 0);
           break;
         case "overtime":
-          comparison = (a.overtimeHours || 0) - (b.overtimeHours || 0);
+          // For now, use duration as overtime since we don't have separate overtime tracking
+          comparison = (a.duration || 0) - (b.duration || 0);
           break;
       }
       return sortOrder === "asc" ? comparison : -comparison;
@@ -161,14 +204,15 @@ export default function TimeTrackingPage() {
   }, [timeLogs, selectedUser, selectedProject, selectedDateRange, searchTerm, sortBy, sortOrder]);
 
   const timeStats = useMemo((): TimeStats => {
-    const totalHours = filteredTimeLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
-    const regularHours = filteredTimeLogs.reduce((sum, log) => sum + (log.regularHours || 0), 0);
-    const overtimeHours = filteredTimeLogs.reduce((sum, log) => sum + (log.overtimeHours || 0), 0);
+    const totalSeconds = filteredTimeLogs.reduce((sum, log) => sum + (log.duration || 0), 0);
+    const totalHours = totalSeconds / 3600; // Convert seconds to hours
+    const regularHours = totalHours; // For now, treat all hours as regular since we don't have overtime tracking
+    const overtimeHours = 0; // No overtime tracking in current model
     const totalEntries = filteredTimeLogs.length;
     const uniqueUsers = new Set(filteredTimeLogs.map((log) => log.userId)).size;
     const uniqueProjects = new Set(filteredTimeLogs.map((log) => log.projectId).filter(Boolean)).size;
     const averageHoursPerDay = totalEntries > 0 ? totalHours / totalEntries : 0;
-    const overtimePercentage = totalHours > 0 ? (overtimeHours / totalHours) * 100 : 0;
+    const overtimePercentage = 0; // No overtime tracking
     return {
       totalHours,
       regularHours,
@@ -187,8 +231,8 @@ export default function TimeTrackingPage() {
     filteredTimeLogs.forEach((log) => {
       const userId = log.userId;
       const current = userMap.get(userId) || { hours: 0, overtime: 0, entries: 0 };
-      current.hours += log.totalHours || 0;
-      current.overtime += log.overtimeHours || 0;
+      current.hours += (log.duration || 0) / 3600; // Convert seconds to hours
+      current.overtime += 0; // No overtime tracking
       current.entries += 1;
       userMap.set(userId, current);
     });
@@ -210,7 +254,7 @@ export default function TimeTrackingPage() {
     filteredTimeLogs.forEach((log) => {
       if (log.projectId) {
         const current = projectMap.get(log.projectId) || { hours: 0, users: new Set(), entries: 0 };
-        current.hours += log.totalHours || 0;
+        current.hours += (log.duration || 0) / 3600; // Convert seconds to hours
         current.users.add(log.userId);
         current.entries += 1;
         projectMap.set(log.projectId, current);
@@ -444,7 +488,7 @@ export default function TimeTrackingPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900">
-                              {new Date(log.date).toLocaleDateString()}
+                              {new Date(log.startTime).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4">
                               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100">
@@ -452,23 +496,27 @@ export default function TimeTrackingPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900">{log.task?.name || "No Task"}</td>
-                            <td className="px-6 py-4 text-sm text-gray-900">{formatHours(log.totalHours || 0)}</td>
+                            <td className="px-6 py-4 text-sm text-gray-900">
+                              {formatHours((log.duration || 0) / 3600)}
+                            </td>
                             <td className="px-6 py-4">
-                              {log.overtimeHours && log.overtimeHours > 0 ? (
+                              {log.duration && log.duration > 0 ? (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                  {formatHours(log.overtimeHours)}
+                                  {formatHours((log.duration || 0) / 3600)}
                                 </span>
                               ) : (
-                                <span className="text-sm text-gray-500">-</span>
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  No Overtime
+                                </span>
                               )}
                             </td>
                             <td className="px-6 py-4">
                               <span
                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                                  log.totalHours || 0
+                                  (log.duration || 0) / 3600
                                 )}`}
                               >
-                                {log.totalHours && log.totalHours > 8 ? "Overtime" : "Normal"}
+                                {log.duration && log.duration > 0 ? "Overtime" : "Normal"}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-sm font-medium">
