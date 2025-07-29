@@ -4,7 +4,8 @@ import { connectDB } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-export async function GET(request: NextRequest, { params }: { params: { section: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ section: string }> }) {
+  const params = await props.params;
   await connectDB();
   const session = await getServerSession(authOptions);
 
@@ -39,7 +40,8 @@ export async function GET(request: NextRequest, { params }: { params: { section:
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { section: string } }) {
+export async function PATCH(request: NextRequest, props: { params: Promise<{ section: string }> }) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id || session.user.role !== "admin") {
@@ -85,7 +87,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { sectio
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { section: string } }) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ section: string }> }) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id || session.user.role !== "admin") {

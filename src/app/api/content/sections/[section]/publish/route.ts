@@ -4,7 +4,8 @@ import { connectDB } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
-export async function POST(request: NextRequest, { params }: { params: { section: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ section: string }> }) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.id || session.user.role !== "admin") {
