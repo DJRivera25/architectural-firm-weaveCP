@@ -36,6 +36,14 @@ export const createContent = (data: ContentData) => api.post<ContentData>("/cont
 export const updateContent = (id: string, data: Partial<ContentData>) => api.patch<ContentData>(`/content/${id}`, data);
 export const deleteContent = (id: string) => api.delete(`/content/${id}`);
 
+// --- Content Sections (Enhanced) ---
+export const getContentSection = (section: string) => api.get<ContentData>(`/content/sections/${section}`);
+export const updateContentSection = (
+  section: string,
+  data: { draftData?: Record<string, unknown>; publishedData?: Record<string, unknown> }
+) => api.patch<ContentData>(`/content/sections/${section}`, data);
+export const publishContentSection = (section: string) => api.post<ContentData>(`/content/sections/${section}/publish`);
+
 // --- Team ---
 export const getTeam = () => api.get<IUser[]>("/team");
 export const updateTeamMember = (id: string, data: Partial<IUser>) => api.patch<IUser>(`/team/${id}`, data);

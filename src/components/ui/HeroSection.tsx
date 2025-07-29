@@ -17,7 +17,7 @@ export type HeroSectionProps = {
 };
 
 export default function HeroSection({
-  beforeImage = "/Before - Anilao Site Plan_page-0001.jpg",
+  beforeImage = "/Before - Anilao Site Plan_page-0001.png",
   afterImage = "/After - Anilao Render.jpg",
   subheadline = "We are an architecture service outsourcing company that seamlessly translates design concepts into documentation.",
   cta1Text = "View Our Work",
