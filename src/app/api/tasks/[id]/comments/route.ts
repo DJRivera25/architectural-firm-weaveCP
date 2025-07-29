@@ -8,7 +8,8 @@ function isAssigneeId(obj: unknown): obj is { toString: () => string } {
   return typeof obj === "object" && obj !== null && typeof (obj as { toString: unknown }).toString === "function";
 }
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +26,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   return NextResponse.json(task.comments);
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
   if (!session || !session.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
