@@ -57,6 +57,7 @@ export const getUserById = (id: string) => api.get<IUser>(`/users/${id}`);
 export const updateUserById = (id: string, data: Partial<IUser>) => api.patch<IUser>(`/users/${id}`, data);
 // Deprecated: use getUserById/updateUserById for profile
 export const updateUser = updateUserById;
+export const getUsersByIds = (ids: string[]) => api.post<IUser[]>("/users/by-ids", { ids });
 
 // --- Jobs ---
 export const getJobs = () => api.get<JobData[]>("/jobs");
@@ -65,11 +66,23 @@ export const updateJob = (id: string, data: Partial<JobData>) => api.patch<JobDa
 export const deleteJob = (id: string) => api.delete(`/jobs/${id}`);
 
 // --- TimeLogs ---
-export const getTimeLogs = () => api.get<TimeLogData[]>("/timelogs");
-export const createTimeLog = (data: Omit<TimeLogData, "userId">) => api.post<TimeLogData>("/timelogs", data);
+export const getTimeLogs = (params?: string) => api.get<TimeLogData[]>(`/timelogs${params ? params : ""}`);
+export const getTimeLog = (id: string) => api.get<TimeLogData>(`/timelogs/${id}`);
+export const createTimeLog = (data: Omit<TimeLogData, "_id" | "userId" | "createdAt" | "updatedAt">) =>
+  api.post<TimeLogData>("/timelogs", data);
 export const updateTimeLog = (id: string, data: Partial<TimeLogData>) =>
   api.patch<TimeLogData>(`/timelogs/${id}`, data);
 export const deleteTimeLog = (id: string) => api.delete(`/timelogs/${id}`);
+export const getTimeLogsByProject = (projectId: string) => api.get<TimeLogData[]>(`/timelogs?projectId=${projectId}`);
+export const getTimeLogsByTask = (taskId: string) => api.get<TimeLogData[]>(`/timelogs?taskId=${taskId}`);
+export const getTimeLogsByUser = (userId: string) => api.get<TimeLogData[]>(`/timelogs?userId=${userId}`);
+export const getTimeLogReports = (params?: string) => api.get(`/timelogs/reports${params ? params : ""}`);
+export const getTimeLogSummary = (startDate: string, endDate: string, userId?: string, projectId?: string) =>
+  api.get(
+    `/timelogs/summary?startDate=${startDate}&endDate=${endDate}${userId ? `&userId=${userId}` : ""}${
+      projectId ? `&projectId=${projectId}` : ""
+    }`
+  );
 
 // --- Images ---
 export const getImages = () => api.get<CloudinaryImageResource[]>("/images");
@@ -90,9 +103,11 @@ export const deleteNotification = (id: string) => api.delete(`/notifications/${i
 
 // --- Projects ---
 export const getProjects = () => api.get<Project[]>("/projects");
+export const getProject = (id: string) => api.get<Project>(`/projects/${id}`);
 export const createProject = (data: Partial<Project>) => api.post<Project>("/projects", data);
 export const updateProject = (id: string, data: Partial<Project>) => api.patch<Project>(`/projects/${id}`, data);
 export const deleteProject = (id: string) => api.delete<{ success: boolean }>(`/projects/${id}`);
+export const getProjectMembers = (projectId: string) => api.get<IUser[]>(`/projects/${projectId}/members`);
 
 // --- Tasks ---
 export const getTasks = (params?: string) => api.get<Task[]>(`/tasks${params ? params : ""}`);

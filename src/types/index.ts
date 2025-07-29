@@ -53,17 +53,18 @@ export interface ApplicationData {
 }
 
 export interface TimeLogData {
+  _id?: string;
   userId: string;
-  projectId?: string;
+  projectId: string;
   taskId?: string;
-  date: Date;
-  timeIn: Date;
-  timeOut?: Date;
-  totalHours?: number;
-  regularHours?: number;
-  overtimeHours?: number;
-  overtimeReason?: string;
-  notes?: string;
+  description: string;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in seconds
+  status: "running" | "paused" | "stopped";
+  isActive: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Project {
@@ -75,13 +76,39 @@ export interface Project {
   budget?: number;
   startDate?: string;
   endDate?: string;
-  teamSize?: number;
-  tasksCount?: number;
-  completedTasksCount?: number;
-  progress?: number;
   isActive?: boolean;
+  totalTime?: number; // Total time spent on project in seconds
+  estimatedTime?: number; // Estimated time in seconds
   createdAt?: string;
   updatedAt?: string;
+  photo?: string; // URL to the project background image
+  members?: string[];
+}
+
+export interface TaskChecklistItem {
+  text: string;
+  checked: boolean;
+  createdAt: string;
+  checkedAt?: string;
+}
+
+export interface TaskActivity {
+  type: string;
+  user: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface TaskAttachment {
+  url: string;
+  uploadedBy: string;
+  uploadedAt: string;
+}
+
+export interface TaskComment {
+  user: string;
+  text: string;
+  createdAt: string;
 }
 
 export interface Task {
@@ -93,8 +120,14 @@ export interface Task {
   status: "todo" | "in-progress" | "done" | "active" | "completed" | "paused";
   dueDate?: string;
   isActive: boolean;
+  totalTime?: number; // Total time spent on task in seconds
+  estimatedTime?: number; // Estimated time in seconds
   createdAt: string;
   updatedAt: string;
+  checklist?: TaskChecklistItem[];
+  activity?: TaskActivity[];
+  attachments?: TaskAttachment[];
+  comments?: TaskComment[];
 }
 
 export interface User {
@@ -229,12 +262,19 @@ export interface Job {
 export interface TimeLogWithDetails {
   _id: string;
   userId: string;
-  projectId?: string;
+  projectId: string;
   taskId?: string;
+  description: string;
+  startTime: Date;
+  endTime?: Date;
+  duration: number; // in seconds
+  status: "running" | "paused" | "stopped";
+  isActive: boolean;
   user?: {
     _id: string;
     name: string;
     email: string;
+    image?: string;
   };
   project?: {
     _id: string;
@@ -244,13 +284,8 @@ export interface TimeLogWithDetails {
     _id: string;
     name: string;
   };
-  date: string;
-  timeIn?: string;
-  timeOut?: string;
-  notes?: string;
-  totalHours?: number;
-  regularHours?: number;
-  overtimeHours?: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface AnalyticsMetric {

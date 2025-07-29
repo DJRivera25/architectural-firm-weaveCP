@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { TimerProvider } from "@/components/providers/TimerProvider";
 import {
   HomeIcon,
   DocumentTextIcon,
@@ -19,6 +20,7 @@ import {
   CalendarIcon,
   UserCircleIcon,
   FolderIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/solid";
 
 const navItems = [
@@ -28,6 +30,7 @@ const navItems = [
   { label: "Team", href: "/dashboard/team", icon: <UsersIcon className="w-5 h-5 mr-3" /> },
   { label: "Jobs", href: "/dashboard/jobs", icon: <BriefcaseIcon className="w-5 h-5 mr-3" /> },
   { label: "Tasks", href: "/dashboard/tasks", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
+  { label: "Productivity", href: "/dashboard/productivity", icon: <ChartBarIcon className="w-5 h-5 mr-3" /> },
   { label: "Time Tracking", href: "/dashboard/timetracking", icon: <ClockIcon className="w-5 h-5 mr-3" /> },
   { label: "Leave Management", href: "/dashboard/leaves", icon: <CalendarDaysIcon className="w-5 h-5 mr-3" /> },
   { label: "Calendar", href: "/dashboard/calendar", icon: <CalendarIcon className="w-5 h-5 mr-3" /> },

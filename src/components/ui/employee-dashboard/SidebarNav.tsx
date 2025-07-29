@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ListTodo, CalendarDays, CreditCard, Plane, User, Users, Settings } from "lucide-react";
+import { Home, ListTodo, CalendarDays, CreditCard, Plane, User, Users, Settings, BarChart3 } from "lucide-react";
 
 const navItems = [
   { href: "/employee-dashboard", label: "Home", icon: Home },
+  { href: "/employee-dashboard/productivity", label: "Productivity", icon: BarChart3 },
   { href: "/employee-dashboard/tasks", label: "My Tasks", icon: ListTodo },
   { href: "/employee-dashboard/team", label: "Team", icon: Users },
   { href: "/employee-dashboard/attendance", label: "Attendance", icon: CalendarDays },

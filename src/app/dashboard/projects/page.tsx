@@ -94,8 +94,8 @@ export default function ProjectsPage() {
     const completedProjects = projectData.filter((p) => p.status === "completed").length;
     const onHoldProjects = projectData.filter((p) => p.status === "on-hold").length;
     const totalBudget = projectData.reduce((sum, p) => sum + (p.budget || 0), 0);
-    const averageProgress =
-      projectData.length > 0 ? projectData.reduce((sum, p) => sum + (p.progress || 0), 0) / projectData.length : 0;
+    // Remove progress, teamSize, tasksCount, completedTasksCount from stats
+    const averageProgress = 0; // No longer calculated here
     const recentProjects = projectData.filter((p) => {
       const createdDate = new Date(p.createdAt || "");
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -167,7 +167,7 @@ export default function ProjectsPage() {
 
   const openProjectForm = (mode: "add" | "edit" | "view", project?: Project) => {
     setProjectFormMode(mode);
-    setSelectedProject(project);
+    setSelectedProject(mode === "add" ? undefined : project);
     setProjectFormOpen(true);
   };
 
@@ -260,17 +260,14 @@ export default function ProjectsPage() {
 
         {project.description && <p className="text-sm text-gray-600 mb-4 line-clamp-2">{project.description}</p>}
 
-        {/* Progress Bar */}
+        {/* Progress Bar - now N/A */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700">Progress</span>
-            <span className="text-sm text-gray-500">{project.progress || 0}%</span>
+            <span className="text-sm text-gray-500">N/A</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${project.progress || 0}%` }}
-            ></div>
+            <div className="bg-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `0%` }}></div>
           </div>
         </div>
 
@@ -278,13 +275,11 @@ export default function ProjectsPage() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="flex items-center text-sm text-gray-600">
             <UserGroupIcon className="w-4 h-4 mr-2" />
-            <span>{project.teamSize || 0} members</span>
+            <span>{project.members ? project.members.length : 0} members</span>
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <CheckCircleIcon className="w-4 h-4 mr-2" />
-            <span>
-              {project.completedTasksCount || 0}/{project.tasksCount || 0} tasks
-            </span>
+            <span>N/A tasks</span>
           </div>
           <div className="flex items-center text-sm text-gray-600">
             <CurrencyDollarIcon className="w-4 h-4 mr-2" />

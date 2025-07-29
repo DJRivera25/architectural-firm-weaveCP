@@ -4,6 +4,46 @@ import { connectDB } from "@/lib/db";
 import Team from "@/models/Team";
 import User from "@/models/User";
 import { authOptions } from "@/lib/auth";
+import { Types } from "mongoose";
+
+// Type definitions for serialization
+interface TeamDocument {
+  _id: Types.ObjectId;
+  name: string;
+  description?: string;
+  members: (Types.ObjectId | { _id: Types.ObjectId; [key: string]: unknown })[];
+  manager?: Types.ObjectId | { _id: Types.ObjectId; [key: string]: unknown };
+  createdAt?: Date;
+  updatedAt?: Date;
+  [key: string]: unknown;
+}
+
+interface SerializedTeam {
+  _id: string;
+  name: string;
+  description?: string;
+  members: (string | { _id: string; [key: string]: unknown })[];
+  manager?: string | { _id: string; [key: string]: unknown };
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+// Utility function to serialize team data
+const serializeTeam = (team: TeamDocument): SerializedTeam => ({
+  ...team,
+  _id: team._id.toString(),
+  members: team.members.map((member) =>
+    typeof member === "object" && member._id ? { ...member, _id: member._id.toString() } : member.toString()
+  ),
+  manager: team.manager
+    ? typeof team.manager === "object" && team.manager._id
+      ? { ...team.manager, _id: team.manager._id.toString() }
+      : team.manager.toString()
+    : undefined,
+  createdAt: team.createdAt?.toISOString(),
+  updatedAt: team.updatedAt?.toISOString(),
+});
 
 export async function GET() {
   await connectDB();
@@ -29,5 +69,7 @@ export async function GET() {
     })
     .lean();
 
-  return NextResponse.json({ teams });
+  // Serialize all teams
+  const serializedTeams = teams.map((team) => serializeTeam(team as unknown as TeamDocument));
+  return NextResponse.json({ teams: serializedTeams });
 }

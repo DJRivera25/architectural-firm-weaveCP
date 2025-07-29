@@ -102,7 +102,7 @@ export default function EmployeeDashboardPage() {
       const pendingTasks = userTasks.filter(
         (task: Task) => task.status === "todo" || task.status === "in-progress"
       ).length;
-      const totalHours = userTimeLogs.reduce((sum: number, log: TimeLogData) => sum + (log.totalHours || 0), 0);
+      const totalHours = userTimeLogs.reduce((sum: number, log: TimeLogData) => sum + (log.duration || 0), 0) / 3600;
       const averageHours = userTimeLogs.length > 0 ? totalHours / userTimeLogs.length : 0;
       const pendingLeaves = userLeaves.filter((leave: LeaveWithUser) => leave.status === "pending").length;
       const approvedLeaves = userLeaves.filter((leave: LeaveWithUser) => leave.status === "approved").length;
@@ -114,25 +114,31 @@ export default function EmployeeDashboardPage() {
       const thisWeekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
       const lastWeekStart = new Date(thisWeekStart.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      const thisWeekHours = userTimeLogs
-        .filter((log: TimeLogData) => new Date(log.date) >= thisWeekStart)
-        .reduce((sum: number, log: TimeLogData) => sum + (log.totalHours || 0), 0);
+      const thisWeekHours =
+        userTimeLogs
+          .filter((log: TimeLogData) => new Date(log.startTime) >= thisWeekStart)
+          .reduce((sum: number, log: TimeLogData) => sum + (log.duration || 0), 0) / 3600;
 
-      const lastWeekHours = userTimeLogs
-        .filter((log: TimeLogData) => {
-          const logDate = new Date(log.date);
-          return logDate >= lastWeekStart && logDate < thisWeekStart;
-        })
-        .reduce((sum: number, log: TimeLogData) => sum + (log.totalHours || 0), 0);
+      const lastWeekHours =
+        userTimeLogs
+          .filter((log: TimeLogData) => {
+            const logDate = new Date(log.startTime);
+            return logDate >= lastWeekStart && logDate < thisWeekStart;
+          })
+          .reduce((sum: number, log: TimeLogData) => sum + (log.duration || 0), 0) / 3600;
 
       // Calculate monthly hours
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthlyHours = userTimeLogs
-        .filter((log: TimeLogData) => new Date(log.date) >= monthStart)
-        .reduce((sum: number, log: TimeLogData) => sum + (log.totalHours || 0), 0);
+      const monthlyHours =
+        userTimeLogs
+          .filter((log: TimeLogData) => new Date(log.startTime) >= monthStart)
+          .reduce((sum: number, log: TimeLogData) => sum + (log.duration || 0), 0) / 3600;
 
-      // Calculate overtime hours
-      const overtimeHours = userTimeLogs.reduce((sum: number, log: TimeLogData) => sum + (log.overtimeHours || 0), 0);
+      // Calculate overtime hours (assuming 8 hours per day is standard)
+      const overtimeHours = userTimeLogs.reduce((sum: number, log: TimeLogData) => {
+        const hours = (log.duration || 0) / 3600;
+        return sum + Math.max(0, hours - 8); // Overtime is hours beyond 8 per day
+      }, 0);
 
       // Calculate upcoming deadlines
       const upcomingDeadlines = userTasks.filter((task: Task) => {
@@ -144,7 +150,7 @@ export default function EmployeeDashboardPage() {
 
       // Calculate current streak (consecutive days with time logs)
       let currentStreak = 0;
-      const sortedLogs = userTimeLogs.map((log) => new Date(log.date)).sort((a, b) => b.getTime() - a.getTime());
+      const sortedLogs = userTimeLogs.map((log) => new Date(log.startTime)).sort((a, b) => b.getTime() - a.getTime());
 
       if (sortedLogs.length > 0) {
         const currentDate = new Date();

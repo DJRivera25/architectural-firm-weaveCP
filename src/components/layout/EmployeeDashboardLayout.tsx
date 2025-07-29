@@ -15,6 +15,7 @@ import {
   CalendarDaysIcon,
   Cog6ToothIcon,
   UsersIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/solid";
 import { useEffect, useRef, useState } from "react";
 
@@ -23,6 +24,7 @@ const navItems = [
   { label: "Tasks", href: "/employee-dashboard/tasks", icon: <ClipboardIcon className="w-5 h-5 mr-3" /> },
   { label: "Team", href: "/employee-dashboard/team", icon: <UsersIcon className="w-5 h-5 mr-3" /> },
   { label: "Time Logs", href: "/employee-dashboard/timelogs", icon: <ClockIcon className="w-5 h-5 mr-3" /> },
+  { label: "Productivity", href: "/employee-dashboard/productivity", icon: <ChartBarIcon className="w-5 h-5 mr-3" /> },
   {
     label: "Leave Management",
     href: "/employee-dashboard/leaves",
