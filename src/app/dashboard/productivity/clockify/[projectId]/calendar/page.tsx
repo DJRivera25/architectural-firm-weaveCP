@@ -3,18 +3,20 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, ChartBarIcon, CalendarIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ChartBarIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { TimeCalendar } from "@/components/ui/TimeCalendar";
 import { getProject } from "@/utils/api";
 import type { Project } from "@/types";
 
 interface CalendarPageProps {
-  params: {
+  params: Promise<{
     projectId: string;
-  };
+  }>;
 }
 
 const CalendarPage: React.FC<CalendarPageProps> = ({ params }) => {
+  const resolvedParams = React.use(params);
+  const projectId = resolvedParams.projectId;
   const { data: session } = useSession();
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
@@ -23,7 +25,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ params }) => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const response = await getProject(params.projectId);
+        const response = await getProject(projectId);
         setProject(response.data);
       } catch (error) {
         console.error("Failed to fetch project:", error);
@@ -32,17 +34,17 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ params }) => {
       }
     };
 
-    if (params.projectId) {
+    if (projectId) {
       fetchProject();
     }
-  }, [params.projectId]);
+  }, [projectId]);
 
   const handleBackToTimeTracking = () => {
-    router.push(`/dashboard/productivity/clockify/${params.projectId}`);
+    router.push(`/dashboard/productivity/clockify/${projectId}`);
   };
 
   const handleGoToSummary = () => {
-    router.push(`/dashboard/productivity/clockify/${params.projectId}/summary`);
+    router.push(`/dashboard/productivity/clockify/${projectId}/summary`);
   };
 
   if (loading) {
@@ -114,7 +116,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ params }) => {
 
         {/* Calendar Dashboard */}
         <div className="bg-white rounded-lg shadow p-6">
-          <TimeCalendar projectId={params.projectId} />
+          <TimeCalendar projectId={projectId} />
         </div>
       </div>
     </div>
