@@ -85,23 +85,26 @@ export default function EmployeeTimeLogsPage() {
     const lastWeekStart = new Date(weekStart.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const thisWeekLogs = logs.filter((log) => new Date(log.date) >= weekStart);
+    const thisWeekLogs = logs.filter((log) => new Date(log.startTime) >= weekStart);
     const lastWeekLogs = logs.filter((log) => {
-      const logDate = new Date(log.date);
+      const logDate = new Date(log.startTime);
       return logDate >= lastWeekStart && logDate < weekStart;
     });
-    const thisMonthLogs = logs.filter((log) => new Date(log.date) >= monthStart);
+    const thisMonthLogs = logs.filter((log) => new Date(log.startTime) >= monthStart);
 
-    const totalHours = logs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
-    const thisWeekHours = thisWeekLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
-    const lastWeekHours = lastWeekLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
-    const thisMonthHours = thisMonthLogs.reduce((sum, log) => sum + (log.totalHours || 0), 0);
-    const overtimeHours = logs.reduce((sum, log) => sum + (log.overtimeHours || 0), 0);
+    const totalHours = logs.reduce((sum, log) => sum + (log.duration || 0) / 3600, 0);
+    const thisWeekHours = thisWeekLogs.reduce((sum, log) => sum + (log.duration || 0) / 3600, 0);
+    const lastWeekHours = lastWeekLogs.reduce((sum, log) => sum + (log.duration || 0) / 3600, 0);
+    const thisMonthHours = thisMonthLogs.reduce((sum, log) => sum + (log.duration || 0) / 3600, 0);
+    const overtimeHours = logs.reduce((sum, log) => {
+      const hours = (log.duration || 0) / 3600;
+      return sum + Math.max(0, hours - 8); // Overtime is hours beyond 8 per day
+    }, 0);
     const averageDailyHours = logs.length > 0 ? totalHours / logs.length : 0;
 
     // Calculate current streak (consecutive days with time logs)
     let currentStreak = 0;
-    const sortedLogs = logs.map((log) => new Date(log.date)).sort((a, b) => b.getTime() - a.getTime());
+    const sortedLogs = logs.map((log) => new Date(log.startTime)).sort((a, b) => b.getTime() - a.getTime());
 
     if (sortedLogs.length > 0) {
       const currentDate = new Date();
@@ -149,10 +152,10 @@ export default function EmployeeTimeLogsPage() {
     if (dateFilter === "week") {
       const weekStart = new Date(now);
       weekStart.setDate(now.getDate() - now.getDay());
-      logs = logs.filter((log) => new Date(log.date) >= weekStart);
+      logs = logs.filter((log) => new Date(log.startTime) >= weekStart);
     } else if (dateFilter === "month") {
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      logs = logs.filter((log) => new Date(log.date) >= monthStart);
+      logs = logs.filter((log) => new Date(log.startTime) >= monthStart);
     }
 
     if (projectFilter !== "all") {
@@ -162,13 +165,13 @@ export default function EmployeeTimeLogsPage() {
     if (searchTerm) {
       logs = logs.filter(
         (log) =>
-          log.notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          log.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           log.project?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           log.task?.name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    return logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return logs.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
   }, [timeLogs, dateFilter, projectFilter, searchTerm]);
 
   const StatCard = ({
@@ -207,8 +210,8 @@ export default function EmployeeTimeLogsPage() {
   );
 
   const TimeLogCard = ({ log }: { log: TimeLogData & { _id: string; project?: Project; task?: Task } }) => {
-    const isOvertime = (log.overtimeHours || 0) > 0;
-    const isToday = new Date(log.date).toDateString() === new Date().toDateString();
+    const isOvertime = (log.duration || 0) / 3600 > 8;
+    const isToday = new Date(log.startTime).toDateString() === new Date().toDateString();
 
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200 group">
@@ -219,14 +222,14 @@ export default function EmployeeTimeLogsPage() {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                {new Date(log.date).toLocaleDateString()}
+                {new Date(log.startTime).toLocaleDateString()}
                 {isToday && (
                   <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Today</span>
                 )}
               </h3>
               <p className="text-sm text-gray-600 mt-1">
-                {log.timeIn ? new Date(log.timeIn).toLocaleTimeString() : "No clock in"} -
-                {log.timeOut ? new Date(log.timeOut).toLocaleTimeString() : "No clock out"}
+                {log.startTime ? new Date(log.startTime).toLocaleTimeString() : "No start time"} -
+                {log.endTime ? new Date(log.endTime).toLocaleTimeString() : "No end time"}
               </p>
             </div>
           </div>
@@ -251,12 +254,12 @@ export default function EmployeeTimeLogsPage() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="flex items-center text-sm text-gray-600">
             <ClockIcon className="w-4 h-4 mr-2" />
-            <span className="truncate">{(log.totalHours || 0).toFixed(2)} hours</span>
+            <span className="truncate">{(log.duration || 0).toFixed(2)} hours</span>
           </div>
           {isOvertime && (
             <div className="flex items-center text-sm text-red-600">
               <ExclamationTriangleIcon className="w-4 h-4 mr-2" />
-              <span className="truncate">{(log.overtimeHours || 0).toFixed(2)} overtime</span>
+              <span className="truncate">{(log.duration || 0).toFixed(2)} overtime</span>
             </div>
           )}
         </div>
@@ -274,16 +277,16 @@ export default function EmployeeTimeLogsPage() {
         </div>
 
         {/* Notes */}
-        {log.notes && (
+        {log.description && (
           <div className="mb-4">
-            <p className="text-sm font-medium text-gray-700 mb-2">Notes</p>
-            <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">{log.notes}</p>
+            <p className="text-sm font-medium text-gray-700 mb-2">Description</p>
+            <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">{log.description}</p>
           </div>
         )}
 
         {/* Action Buttons */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="text-xs text-gray-500">Logged: {new Date(log.date).toLocaleDateString()}</div>
+          <div className="text-xs text-gray-500">Logged: {new Date(log.startTime).toLocaleDateString()}</div>
           <div className="flex items-center space-x-2">
             <button className="inline-flex items-center px-3 py-1.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors">
               <PlayIcon className="w-4 h-4 mr-1" />

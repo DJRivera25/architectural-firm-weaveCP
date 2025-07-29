@@ -87,7 +87,7 @@ export default function DashboardPage() {
       // Calculate stats
       const completedTasks = tasks.filter((task: Task) => task.status === "completed").length;
       const pendingTasks = tasks.filter((task: Task) => task.status === "todo" || task.status === "in-progress").length;
-      const totalHours = timeLogs.reduce((sum: number, log: TimeLogData) => sum + (log.totalHours || 0), 0);
+      const totalHours = timeLogs.reduce((sum: number, log: TimeLogData) => sum + (log.duration || 0) / 3600, 0);
       const averageHours = timeLogs.length > 0 ? totalHours / timeLogs.length : 0;
       const pendingLeaves = leaves.filter((leave: LeaveWithUser) => leave.status === "pending").length;
       const approvedLeaves = leaves.filter((leave: LeaveWithUser) => leave.status === "approved").length;
